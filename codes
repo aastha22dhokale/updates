@@ -4,14 +4,19 @@ public void processOrganisationUnit(String orgNumber) {
     String uuid = response.getInvolvedPartyIdentifier();
 
     if (uuid == null || uuid.isBlank()) {
-        log.warn("No involvedPartyIdentifier found in response");
-        return;
+        throw new OrganisationUnitCreationException("No involvedPartyIdentifier returned for orgNumber=" + orgNumber);
     }
 
     UpdateExternalIdentifierOrganisationUnitRequest updateRequest = buildUpdateRequest(orgNumber);
 
     // ---------------------------
-    // PARALLEL CALLS (SAFE – NO FLOW BREAK)
+    // CONSTANTS (Hard-coded)
+    // ---------------------------
+    final String PARENT_ID = "PARENT-ID";
+    final String CHILD_ID = "CHILD-ID";
+
+    // ---------------------------
+    // PARALLEL CALLS WITH FLOW-AWARE ERROR HANDLING
     // ---------------------------
 
     CompletableFuture<Void> updateExternalIdentifierAsync =
@@ -19,7 +24,9 @@ public void processOrganisationUnit(String orgNumber) {
                 try {
                     updateExternalIdentifier(uuid, updateRequest);
                 } catch (Exception e) {
-                    log.error("[UpdateExternalIdentifier] Failed for uuid={} : {}", uuid, e.getMessage());
+                    throw new ExternalIdentifierUpdateException(
+                            "Failed to update external identifier for uuid=" + uuid, e
+                    );
                 }
             });
 
@@ -28,28 +35,51 @@ public void processOrganisationUnit(String orgNumber) {
                 try {
                     addressService.createPostalAddress(uuid, orgNumber);
                 } catch (Exception e) {
-                    log.error("[CreatePostalAddress] Failed for uuid={} : {}", uuid, e.getMessage());
+                    throw new PostalAddressCreationException(
+                            "Failed to create postal address for uuid=" + uuid, e
+                    );
                 }
             });
 
     CompletableFuture<Void> createOrganisationUnitHierarchyAsync =
             CompletableFuture.runAsync(() -> {
                 try {
-                    // 🔥 HARD-CODED CONSTANTS HERE
-                    final String parentId = "PARENT-ID";
-                    final String childId = "CHILD-ID";
-
-                    createOrganisationUnitHierarchy(childId, parentId);
+                    createOrganisationUnitHierarchy(CHILD_ID, PARENT_ID);
                 } catch (Exception e) {
-                    log.error("[CreateHierarchy] Failed for uuid={} : {}", uuid, e.getMessage());
+                    throw new OrganisationHierarchyCreationException(
+                            "Failed to create hierarchy child=" + CHILD_ID + ", parent=" + PARENT_ID, e
+                    );
                 }
             });
 
-    CompletableFuture.allOf(
-            updateExternalIdentifierAsync,
-            createPostalAddressAsync,
-            createOrganisationUnitHierarchyAsync
-    ).join();
+
+    // ---------------------------
+    // WAIT FOR ALL + CAPTURE FLOW ERRORS
+    // ---------------------------
+
+    try {
+        CompletableFuture.allOf(
+                updateExternalIdentifierAsync,
+                createPostalAddressAsync,
+                createOrganisationUnitHierarchyAsync
+        ).join();
+    } catch (CompletionException ce) {
+
+        // You get EXACTLY which API failed
+        Throwable cause = ce.getCause();
+
+        if (cause instanceof ExternalIdentifierUpdateException) {
+            log.error("FLOW ERROR: External Identifier update failed → {}", cause.getMessage());
+        } else if (cause instanceof PostalAddressCreationException) {
+            log.error("FLOW ERROR: Postal Address creation failed → {}", cause.getMessage());
+        } else if (cause instanceof OrganisationHierarchyCreationException) {
+            log.error("FLOW ERROR: Hierarchy creation failed → {}", cause.getMessage());
+        } else {
+            log.error("FLOW ERROR: Unexpected failure: {}", cause.getMessage());
+        }
+
+        throw ce; // rethrow if the flow must indicate failure
+    }
 
     log.info("✔ All parallel operations completed for OU uuid={}", uuid);
 }

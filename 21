@@ -1,105 +1,129 @@
+Involved Party API
+
+Share
+View in Console
+Back to API details
+Updates an Organisation Unit Name
+patch
+/v5/involved-parties/{uuid}/organisation-unit-names/{nameType}
+
+🏷️ Name
+
+Updates an Organisation Unit Name.
+
+header params
+X-ING-LastUpdateUser string required
+The LastUpdateUser
+
+path params
+uuid string required
+UUID of an Organisation Unit
+
+nameType string required
+NameType of an Organisation Unit to be updated
+
+Request body (required)
+Specify the involved party object in Json
+
+
+application/json
+
+Schema
+Examples
+▾
+object required
+organisationUnitName string
+example: ABC corporation
+effectiveDate string
+example: 2020-10-10T10:11:12.345+02:00
+endDate string
+example: 2050-12-12T23:59:59.999+02:00
+dataSource string
+example: FOS_IT
+Responses
+
+200
+
+400
+
+404
+
+500
+200 OK
+
+
+application/json
+
+Schema
+Examples
+▾
+object
+▾
+organisationUnitName object
+organisationUnitNameType string
+example: OU_NM
+organisationUnitName string
+example: ABC corporation
+dataSource string
+example: FOS_IT
+lastUpdateUser string
+example: OnePam
+lastUpdateDate string
+example: 2021-04-27T09:11:11.111Z
+effectiveDate string
+example: 2020-10-10T08:11:12.345Z
+endDate string
+example: 2050-12-12T21:59:59.999Z
+▾
+_links object
+▾
+self object
+href string
+example: https://(hostname):(port)/v5/involved-parties/{uuid}/names
 package com.ing.datadist.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.io.Serializable;
-
-
+@Generated
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Generated
-public class PostalAddressResponse implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class UpdateOrganisationUnitNameV5Request {
 
-    @JsonProperty("postalAddressUsageType")
-    private String postalAddressUsageType;
-
-    @JsonProperty("countryCode")
-    private String countryCode;
-
-    @JsonProperty("countryRegionCode")
-    private String countryRegionCode;
-
-    @JsonProperty("districtName")
-    private String districtName;
-
-    @JsonProperty("cityName")
-    private String cityName;
-
-    @JsonProperty("cityAreaName")
-    private String cityAreaName;
-
-    @JsonProperty("regionName")
-    private String regionName;
-
-    @JsonProperty("postalCode")
-    private String postalCode;
-
-    @JsonProperty("streetName")
-    private String streetName;
-
-    @JsonProperty("houseNumber")
-    private String houseNumber;
-
-    @JsonProperty("houseNumberAddition")
-    private String houseNumberAddition;
-
-    @JsonProperty("buildingName")
-    private String buildingName;
-
-    @JsonProperty("deliveryInformation")
-    private String deliveryInformation;
-
-    @JsonProperty("floor")
-    private String floor;
-
-    @JsonProperty("locationUnitNumber")
-    private String locationUnitNumber;
-
-    @JsonProperty("departmentName")
-    private String departmentName;
-
-    @JsonProperty("subdepartmentName")
-    private String subdepartmentName;
-
-    @JsonProperty("poBoxNumber")
-    private String poBoxNumber;
-
-    @JsonProperty("streetType")
-    private String streetType;
-
-    @JsonProperty("unstructuredAddressLine1")
-    private String unstructuredAddressLine1;
-
-    @JsonProperty("unstructuredAddressLine2")
-    private String unstructuredAddressLine2;
-
-    @JsonProperty("unstructuredAddressLine3")
-    private String unstructuredAddressLine3;
-
-    @JsonProperty("deliveryFailureReasonType")
-    private String deliveryFailureReasonType;
-
-    @JsonProperty("dataSource")
-    private String dataSource;
-
-    @JsonProperty("lastUpdateUser")
-    private String lastUpdateUser;
-
-    @JsonProperty("lastUpdateDate")
-    private String lastUpdateDate;
+    @JsonProperty("organisationUnitName")
+    private String organisationUnitName;
 
     @JsonProperty("effectiveDate")
     private String effectiveDate;
 
-    @JsonProperty("lastVerificationDate")
-    private String lastVerificationDate;
-
     @JsonProperty("endDate")
     private String endDate;
+
+    @JsonProperty("dataSource")
+    private String dataSource;
+
+}
+
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UpdateOrganisationUnitNameV5Response {
+
+    @JsonProperty("organisationUnitName")
+    private OrganisationUnitNameResponse organisationUnitName;
+
+    @JsonProperty("_links")
+    private InvolvedPartiesLinkSelfResponse links;
+
 }
 
 package com.ing.datadist.api.utils;
@@ -151,3 +175,34 @@ public enum RegkeyEnum {
         return label + " || " + method + SPACE + endpoint;
     }
 }
+
+    public CompletableFuture<UpdateOrganisationUnitNameV5Response> updateOrganisationUnitName(
+            UpdateOrganisationUnitNameV5Request payload, String uuid, String nameType) {
+        try {
+            String url = RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME.resolveEndpoint(uuid, nameType);
+            Request request = new RichHttpRequestBuilder()
+                    .withUrl(url)
+                    .withMethod(Method.Patch())
+                    .withJsonContent(payload)
+                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
+                    .build();
+            return apiClient.apply(request)
+                    .thenApply(response -> {
+                        try {
+                            return objectMapper.readValue(response.contentString(), UpdateOrganisationUnitNameV5Response.class);
+                        } catch (Exception e) {
+                            throw new DataDistributionApiException(
+                                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
+                                    "Failed to parse response from updateOrganisationUnitName API",
+                                    e.getMessage()
+                            );
+                        }
+                    });
+        } catch (RichHttpRequestBuilderException e) {
+            throw new DataDistributionApiException(
+                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
+                    "Failed to build request for updateOrganisationUnitName API",
+                    e.getMessage()
+            );
+        }
+    }

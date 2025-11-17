@@ -1,175 +1,66 @@
-package com.ing.datadist.api.exception;
+public void processOrganisationUnit(String orgNumber) {
 
-import com.ing.datadist.api.utils.RegkeyEnum;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
-import java.text.MessageFormat;
-import org.springframework.http.HttpStatus;
+    InvolvedPartiesOrganisationUnitResponse response = createOrganisationUnit(orgNumber);
+    String uuid = response.getInvolvedPartyIdentifier();
 
-import static com.ing.datadist.api.utils.DataDistributionConstants.CLIENT_ERROR;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
-@Slf4j
-@Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
-public class DataDistributionApiException extends RuntimeException {
-
-    private static final long serialVersionUID = 1L;
-
-    private final int code;
-    private final String innerMessage;
-    private final String timeStamp;
-
-    private static final String LOG_MESSAGE = "ReqKey {0} - DataDistributionApiException message {1} - innerMessage {2}";
-    private static final String WARNING_CODE = "WarningCode";
-
-    public DataDistributionApiException(RegkeyEnum reqKeyEnum, String message, String innerMessage) {
-        this(reqKeyEnum, CLIENT_ERROR, message, innerMessage);
+    if (uuid == null || uuid.isBlank()) {
+        throw new DataDistributionApiException(
+                RegkeyEnum.CREATE_INVOLVED_PARTY,
+                HttpStatus.BAD_REQUEST,
+                "No involvedPartyIdentifier returned for orgNumber=" + orgNumber
+        );
     }
 
-    public DataDistributionApiException(RegkeyEnum reqKeyEnum, int code, String message, String innerMessage) {
-        super(message);
-        this.code = code;
-        this.innerMessage = innerMessage;
-        this.timeStamp = String.valueOf(System.currentTimeMillis());
+    UpdateExternalIdentifierOrganisationUnitRequest updateRequest = buildUpdateRequest(orgNumber);
 
-        if (isNotBlank(message) && isNotBlank(innerMessage)) {
-            MDC.put(WARNING_CODE, innerMessage);
-            log.error(MessageFormat.format(LOG_MESSAGE, reqKeyEnum.label, message, innerMessage));
-        }
-    }
+    final String PARENT_ID = "PARENT-ID";
+    final String CHILD_ID = "CHILD-ID";
 
-    public DataDistributionApiException(RegkeyEnum regkeyEnum, HttpStatus httpStatus, String innerMessage) {
-        super(httpStatus.getReasonPhrase());
-        this.code = httpStatus.value();
-        this.innerMessage = innerMessage;
-        this.timeStamp = String.valueOf(System.currentTimeMillis());
+    CompletableFuture<Void> updateExternalIdentifierAsync =
+            CompletableFuture.runAsync(() -> {
+                try {
+                    updateExternalIdentifier(uuid, updateRequest);
+                } catch (Exception e) {
+                    throw new DataDistributionApiException(
+                            RegkeyEnum.UPDATE_EXTERNAL_IDENTIFIER,
+                            HttpStatus.BAD_REQUEST,
+                            "Failed to update external identifier for uuid=" + uuid + ": " + e.getMessage()
+                    );
+                }
+            });
 
-        if (isNotBlank(httpStatus.getReasonPhrase()) && isNotBlank(innerMessage)) {
-            MDC.put(WARNING_CODE, innerMessage);
-            log.error(MessageFormat.format(LOG_MESSAGE, regkeyEnum.label, httpStatus.getReasonPhrase(), innerMessage));
-        }
-    }
+    CompletableFuture<Void> createPostalAddressAsync =
+            CompletableFuture.runAsync(() -> {
+                try {
+                    addressService.createPostalAddress(uuid, orgNumber);
+                } catch (Exception e) {
+                    throw new DataDistributionApiException(
+                            RegkeyEnum.CREATE_POSTAL_ADDRESS,
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Failed to create postal address for uuid=" + uuid + ": " + e.getMessage()
+                    );
+                }
+            });
 
-    public static DataDistributionApiException from(RegkeyEnum key, HttpStatus status, String innerMessage) {
-        return new DataDistributionApiException(key, status, innerMessage);
-    }
-    // Creation failure
-    public static class OrganisationUnitCreationException extends DataDistributionApiException {
-        public OrganisationUnitCreationException(String msg) {
-            super(RegkeyEnum.CREATE_INVOLVED_PARTY, msg, msg);
-        }
-    }
+    CompletableFuture<Void> createHierarchyAsync =
+            CompletableFuture.runAsync(() -> {
+                try {
+                    createOrganisationUnitHierarchy(CHILD_ID, PARENT_ID);
+                } catch (Exception e) {
+                    throw new DataDistributionApiException(
+                            RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY,
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Failed to create hierarchy child=" + CHILD_ID + ", parent=" + PARENT_ID + ": " + e.getMessage()
+                    );
+                }
+            });
 
-    // External Identifier update failure
-    public static class ExternalIdentifierUpdateException extends DataDistributionApiException {
-        public ExternalIdentifierUpdateException(String msg, Throwable cause) {
-            super(RegkeyEnum.UPDATE_EXTERNAL_IDENTIFIER, msg, cause != null ? cause.getMessage() : msg);
-            initCause(cause);
-        }
-    }
+    // Don’t handle errors here — let the unified exception bubble up
+    CompletableFuture.allOf(
+            updateExternalIdentifierAsync,
+            createPostalAddressAsync,
+            createHierarchyAsync
+    ).join();
 
-    // Postal Address creation failure
-    public static class PostalAddressCreationException extends DataDistributionApiException {
-        public PostalAddressCreationException(String msg, Throwable cause) {
-            super(RegkeyEnum.CREATE_POSTAL_ADDRESS, msg, cause != null ? cause.getMessage() : msg);
-            initCause(cause);
-        }
-    }
-
-    // Organisation hierarchy creation failure
-    public static class OrganisationHierarchyCreationException extends DataDistributionApiException {
-        public OrganisationHierarchyCreationException(String msg, Throwable cause) {
-            super(RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY, msg, cause != null ? cause.getMessage() : msg);
-            initCause(cause);
-        }
-    }
+    log.info("All parallel operations completed for OU uuid={}", uuid);
 }
-
-//package com.ing.datadist.api.exception;
-//
-//import com.ing.datadist.api.utils.RegkeyEnum;
-//import lombok.EqualsAndHashCode;
-//import lombok.Getter;
-//import lombok.ToString;
-//import lombok.extern.slf4j.Slf4j;
-//import org.slf4j.MDC;
-//import java.text.MessageFormat;
-//import org.springframework.http.HttpStatus;
-//
-//import static com.ing.datadist.api.utils.DataDistributionConstants.CLIENT_ERROR;
-//import static org.apache.commons.lang3.StringUtils.isNotBlank;
-//
-//@Slf4j
-//@Getter
-//@ToString
-//@EqualsAndHashCode(callSuper = true)
-//public class DataDistributionApiException extends RuntimeException {
-//
-//    private static final long serialVersionUID = 1L;
-//
-//    private final int code;
-//    private final String innerMessage;
-//    private final String timeStamp;
-//
-//    private static final String LOG_MESSAGE = "ReqKey {0} - DataDistributionApiException message {1} - innerMessage {2}";
-//    private static final String WARNING_CODE = "WarningCode";
-//
-//    // Constructor with RegkeyEnum and innerMessage
-//    public DataDistributionApiException(RegkeyEnum reqKeyEnum, String message, String innerMessage) {
-//        this(reqKeyEnum, CLIENT_ERROR, message, innerMessage);
-//    }
-//
-//    // Constructor with RegkeyEnum and custom code
-//    public DataDistributionApiException(RegkeyEnum reqKeyEnum, int code, String message, String innerMessage) {
-//        super(message);
-//        this.code = code;
-//        this.innerMessage = innerMessage;
-//        this.timeStamp = String.valueOf(System.currentTimeMillis());
-//
-//        if (isNotBlank(message) && isNotBlank(innerMessage)) {
-//            MDC.put(WARNING_CODE, innerMessage);
-//            log.error(MessageFormat.format(LOG_MESSAGE, reqKeyEnum.label, message, innerMessage));
-//        }
-//    }
-//
-//    // Constructor using HttpStatus
-//    public DataDistributionApiException(RegkeyEnum regkeyEnum, HttpStatus httpStatus, String innerMessage) {
-//        super(httpStatus.getReasonPhrase());
-//        this.code = httpStatus.value();
-//        this.innerMessage = innerMessage;
-//        this.timeStamp = String.valueOf(System.currentTimeMillis());
-//
-//        if (isNotBlank(httpStatus.getReasonPhrase()) && isNotBlank(innerMessage)) {
-//            MDC.put(WARNING_CODE, innerMessage);
-//            log.error(MessageFormat.format(LOG_MESSAGE, regkeyEnum.label, httpStatus.getReasonPhrase(), innerMessage));
-//        }
-//    }
-//
-//    // Static factory for convenience
-//    public static DataDistributionApiException from(RegkeyEnum key, HttpStatus status, String innerMessage) {
-//        return new DataDistributionApiException(key, status, innerMessage);
-//    }
-//
-//    public static class OrganisationUnitCreationException extends DataDistributionApiException {
-//        public OrganisationUnitCreationException(String msg) {
-//            super(RegkeyEnum.CREATE_INVOLVED_PARTY, msg, msg);
-//            if (uuid == null || uuid.isBlank()) {
-//                throw new OrganisationUnitCreationException("No involvedPartyIdentifier returned for orgNumber=" + orgNumber);
-//            }
-//        }
-//    }
-//
-//        // 2️⃣ External Identifier update failure
-//        public static class ExternalIdentifierUpdateException extends DataDistributionApiException {
-//            public ExternalIdentifierUpdateException(String msg, Throwable cause) {
-//                super(RegkeyEnum.UPDATE_EXTERNAL_ID, msg, cause != null ? cause.getMessage() : msg);
-//                initCause(cause);
-//
-//            }
-//        }
-//    }

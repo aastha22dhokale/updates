@@ -1,309 +1,55 @@
-manager: exception handle karaw lagel pr madhe tuzya
-flow break nahi zala pahije
-okayy
-tuzi exc handling cha pr chi reference gheu ?
- gheu shkte , global level la nko kru , fkt tuzya method ch kr, ani flow wise , return exception with proper message
-tuza pr madhe itkach ahe hya method la 
-its not about method , see how flow is happening , for exception for other also
+public void processOrganisationUnit(String orgNumber) {
 
+    InvolvedPartiesOrganisationUnitResponse response = createOrganisationUnit(orgNumber);
+    String uuid = response.getInvolvedPartyIdentifier();
 
-exception handling PR
-package com.ing.datadist.api.service;
-
-import com.ing.datadist.api.model.CreateOrganisationUnitRequest;
-import com.ing.datadist.api.model.CreateOrganisationUnitNameRequest;
-import com.ing.datadist.api.model.InvolvedPartiesOrganisationUnitResponse;
-import com.ing.datadist.api.model.UpdateExternalIdentifierOrganisationUnitRequest;
-import com.ing.datadist.api.model.OrganisationUnitOrganisationRelationshipRequest;
-import com.ing.datadist.configreader.CofaceOpsConfigReader;
-import static com.ing.datadist.api.utils.DataDistributionConstants.DATA_SOURCE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.LOGICAL_DATA_DOMAIN;
-import static com.ing.datadist.api.utils.DataDistributionConstants.LANGUAGE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.CHANNEL_OF_ENTRY;
-import static com.ing.datadist.api.utils.DataDistributionConstants.ORGANISATION_UNIT_NAME_TYPE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.STRUCTURE_TYPE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.EXTERNAL_ID_TYPE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.EXTERNAL_ID_STATUS;
-import static com.ing.datadist.api.utils.DataDistributionConstants.PLACE_OF_ISSUE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.ROLE_REASON_TYPE;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
-@Service
-@Slf4j
-public class OrganisationUnitService {
-
-    private final OnePamRepository onePamRepository;
-    private final CofaceOpsConfigReader configReader;
-
-    public OrganisationUnitService(OnePamRepository onePamRepository, CofaceOpsConfigReader configReader) {
-        this.onePamRepository = onePamRepository;
-        this.configReader = configReader;
+    if (uuid == null || uuid.isBlank()) {
+        log.warn("No involvedPartyIdentifier found in response");
+        return;
     }
 
-    public void processOrganisationUnit(String orgNumber) throws Exception {
-        InvolvedPartiesOrganisationUnitResponse response = createOrganisationUnit(orgNumber);
-        String uuid = response.getInvolvedPartyIdentifier();
-        if (uuid == null || uuid.isBlank()) {
-            log.warn("No involvedPartyIdentifier found in response");
-            return;
-        }
+    UpdateExternalIdentifierOrganisationUnitRequest updateRequest = buildUpdateRequest(orgNumber);
 
-        UpdateExternalIdentifierOrganisationUnitRequest updateRequest = buildUpdateRequest(orgNumber);
-        updateExternalIdentifier(uuid, updateRequest);
-    }
+    // ---------------------------
+    // PARALLEL CALLS (SAFE – NO FLOW BREAK)
+    // ---------------------------
 
-    private InvolvedPartiesOrganisationUnitResponse createOrganisationUnit(String orgNumber) throws Exception{
-        List<Map<String, String>> configs = configReader.fetchByOrgNumber(orgNumber);
-        Map<String, String> config = configs.isEmpty() ? Collections.emptyMap() : configs.get(0);
+    CompletableFuture<Void> updateExternalIdentifierAsync =
+            CompletableFuture.runAsync(() -> {
+                try {
+                    updateExternalIdentifier(uuid, updateRequest);
+                } catch (Exception e) {
+                    log.error("[UpdateExternalIdentifier] Failed for uuid={} : {}", uuid, e.getMessage());
+                }
+            });
 
-        String orgUnitName = config.get("organisationUnitName");
-        String countryOfResidence = config.get("countryOfResidence");
-        String effectiveDate = config.get("dateOfIssue");
+    CompletableFuture<Void> createPostalAddressAsync =
+            CompletableFuture.runAsync(() -> {
+                try {
+                    addressService.createPostalAddress(uuid, orgNumber);
+                } catch (Exception e) {
+                    log.error("[CreatePostalAddress] Failed for uuid={} : {}", uuid, e.getMessage());
+                }
+            });
 
-        if (orgUnitName == null || orgNumber == null || countryOfResidence == null || effectiveDate == null) {
-            log.warn("Missing config values for organisation unit: {}", orgNumber);
-            throw new RuntimeException("Missing config for organisation unit");
-        }
-
-        CreateOrganisationUnitRequest request = CreateOrganisationUnitRequest.builder()
-                .dataSource(DATA_SOURCE)
-                .logicalDataDomain(LOGICAL_DATA_DOMAIN)
-                .countryOfResidence(countryOfResidence)
-                .preferredLanguage(LANGUAGE)
-                .channelOfEntry(CHANNEL_OF_ENTRY)
-                .organisationUnitStructureType(STRUCTURE_TYPE)
-                .effectiveDate(effectiveDate)
-                .organisationUnitNames(Collections.singletonList(
-                        CreateOrganisationUnitNameRequest.builder()
-                                .organisationUnitNameType(ORGANISATION_UNIT_NAME_TYPE)
-                                .organisationUnitName(orgUnitName)
-                                .build()))
-                .build();
-
-        try {
-            return onePamRepository.createInvolvedParty(request).get();
-        } catch (Exception e) {
-            log.error("Failed to create organisation unit : {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    private UpdateExternalIdentifierOrganisationUnitRequest buildUpdateRequest(String orgNumber) {
-        List<Map<String, String>> configs = configReader.fetchByOrgNumber(orgNumber);
-        Map<String, String> config = configs.isEmpty() ? Collections.emptyMap() : configs.get(0);
-
-        String uuid = config.get("uuid");
-        String countryOfIssue = config.get("countryOfResidence");
-        String dateOfIssue = config.get("dateOfIssue");
-        String expiryDate = config.get("expiryDate");
-
-        if (uuid == null || countryOfIssue == null || dateOfIssue == null || expiryDate == null) {
-            log.warn("Missing config values for external identifier update: {}", orgNumber);
-            throw new RuntimeException("Missing config for external identifier update");
-        }
-
-        return UpdateExternalIdentifierOrganisationUnitRequest.builder()
-                .involvedPartyExternalIdentifierType(EXTERNAL_ID_TYPE)
-                .involvedPartyExternalIdentifierValue(uuid)
-                .involvedPartyExternalIdentifierStatusType(EXTERNAL_ID_STATUS)
-                .countryOfIssue(countryOfIssue)
-                .placeOfIssue(PLACE_OF_ISSUE)
-                .dateOfIssue(dateOfIssue)
-                .expiryDate(expiryDate)
-                .dataSource(DATA_SOURCE)
-                .effectiveDate(dateOfIssue)
-                .endDate(ZonedDateTime.now().plusYears(10).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-                .build();
-    }
-
-    private void updateExternalIdentifier(String uuid, UpdateExternalIdentifierOrganisationUnitRequest request) {
-        try {
-            onePamRepository.updateExternalIdentifier(uuid, request).get();
-            log.info("Successfully updated external identifier for UUID: {}", uuid);
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Failed to update external identifier", e);
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Update failed", e);
-        }
-    }
-
-    private void createOrganisationUnitHierarchy(String childId, String parentId) {
-        OrganisationUnitOrganisationRelationshipRequest request = OrganisationUnitOrganisationRelationshipRequest.builder()
-                .childOrganisationUnitIdentifier(childId)
-                .parentOrganisationIdentifier(parentId)
-                .parentRoleReasonType(ROLE_REASON_TYPE)
-                .dataSource(DATA_SOURCE)
-                .build();
-
-        try {
-            onePamRepository.createOrganisationUnitHierarchy(request).get();
-            log.info("Successfully created hierarchy between child: {} and parent: {}", childId, parentId);
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Failed to create organisation unit hierarchy", e);
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Hierarchy creation failed", e);
-        }
-    }
-
-}
-
-
-My PR
-Skip to main content
-Azure DevOps
-IngEurCDaaS01
-/
-IngOne
-/
-Repos
-/
-Pull requests
-/
-
-P33558-DataDistributorAPI
-Search
-
-
-
-
-
-Account manager for DHOKALE, A. (Aastha)
-IngOne
-
-Overview
-
-Boards
-
-Repos
-Files
-Commits
-Pushes
-Branches
-Tags
-Pull requests
-Advanced Security
-
-Pipelines
-
-Test Plans
-
-Artifacts
-Project settings
-parallel calls for create api
-
-Approve
-
-
-Set auto-complete
-
-
-Active
-!3921282
-DHOKALE, A. (Aastha)
-proposes to merge
-feature/cud-task-I
-
-into
-develop
-Overview
-Files
-Updates
-Commits
-Conflicts
-
-All Changes
-
-Filter
-1 changed file
-
-Inline
-
-
-P33558-DataDistributorAPI
-
-
-OrganisationUnitService.java
--3+34
-/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java
-View
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.CompletableFuture;
-@Service
-@Slf4j
-    private final OnePamRepository onePamRepository;
-    private final CofaceOpsConfigReader configReader;
-    private final AddressService addressService;
-    public OrganisationUnitService(OnePamRepository onePamRepository, CofaceOpsConfigReader configReader) {
-    public OrganisationUnitService(OnePamRepository onePamRepository, CofaceOpsConfigReader configReader, AddressService addressService) {
-        this.onePamRepository = onePamRepository;
-        this.configReader = configReader;
-        this.addressService = addressService;
-    }
-    public void processOrganisationUnit(String orgNumber) {
-        InvolvedPartiesOrganisationUnitResponse response = createOrganisationUnit(orgNumber);
-        String uuid = response.getInvolvedPartyIdentifier();
-        if (uuid == null || uuid.isBlank()) {
-            log.warn("No involvedPartyIdentifier found in response");
-            return;
-        }
-        UpdateExternalIdentifierOrganisationUnitRequest updateRequest = buildUpdateRequest(orgNumber);
-        updateExternalIdentifier(uuid, updateRequest);
-        CompletableFuture<Void> updateExternalIdentifierAsync =
-                CompletableFuture.runAsync(() -> updateExternalIdentifier(uuid, updateRequest));
-        CompletableFuture<Void> createPostalAddressAsync =
-                CompletableFuture.runAsync(() -> addressService.createPostalAddress(uuid, orgNumber));
-        CompletableFuture<Void> createOrganisationUnitHierarchyAsync =
-                CompletableFuture.runAsync(() -> {
-                    // Hard-CODED CONSTANTS HERE
+    CompletableFuture<Void> createOrganisationUnitHierarchyAsync =
+            CompletableFuture.runAsync(() -> {
+                try {
+                    // 🔥 HARD-CODED CONSTANTS HERE
                     final String parentId = "PARENT-ID";
                     final String childId = "CHILD-ID";
-                    if (parentId != null && !parentId.isEmpty()) {
-                        createOrganisationUnitHierarchy(childId, parentId);
-                    } else {
-                        log.info("No parent UUID present for {}", uuid);
-                    }
-                });
-        CompletableFuture.allOf(
-                updateExternalIdentifierAsync,
-                createPostalAddressAsync,
-                createOrganisationUnitHierarchyAsync
-        ).join();
-        log.info("All parallel operations completed for OU uuid={}", uuid);
-    }
-    private InvolvedPartiesOrganisationUnitResponse createOrganisationUnit(String orgNumber) {
-            throw new RuntimeException("Hierarchy creation failed", e);
-        }
-    }
+
+                    createOrganisationUnitHierarchy(childId, parentId);
+                } catch (Exception e) {
+                    log.error("[CreateHierarchy] Failed for uuid={} : {}", uuid, e.getMessage());
+                }
+            });
+
+    CompletableFuture.allOf(
+            updateExternalIdentifierAsync,
+            createPostalAddressAsync,
+            createOrganisationUnitHierarchyAsync
+    ).join();
+
+    log.info("✔ All parallel operations completed for OU uuid={}", uuid);
 }
-Showing filters 1 through 8
-
-Row 2 of 6. Clickable
-
-Row 4 of 6. Clickable
-
-Row 4 of 6. Clickable
-
-Row 3 of 6. Clickable
-
-Row 1 of 6. Clickable
-
-Showing filters 1 through 4
-
-Row 1 of 1. Clickable
-
-Showing filters 1 through 4
-
-Row 1 of 9. Clickable
-
-

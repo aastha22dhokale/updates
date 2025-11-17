@@ -1,3 +1,127 @@
+package com.ing.datadist.api.utils;
+
+
+import jakarta.ws.rs.HttpMethod;
+import lombok.Generated;
+
+import static org.apache.commons.lang3.StringUtils.SPACE;
+
+@Generated
+public enum RegkeyEnum {
+    // ✅ OnePam endpoints
+    CREATE_INVOLVED_PARTY("CREATE_INVOLVED_PARTY", HttpMethod.POST, "https://api.ing.com/v5/involved-parties"),
+    UPDATE_EXTERNAL_IDENTIFIER("UPDATE_EXTERNAL_IDENTIFIER", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/external-identifiers"),
+    CREATE_ORGANISATION_UNIT_HIERARCHY("CREATE_ORGANISATION_UNIT_HIERARCHY", HttpMethod.POST, "https://api.ing.com/v1/organisation-hierarchies/relationship"),
+    SEARCH_ORGANISATION_UNIT("SEARCH_ORGANISATION_UNIT", HttpMethod.POST, "https://api.ing.com/v2/partyandagreementsearch/involved-parties/organisation-units/search"),
+    UPDATE_INVOLVED_PARTY("UPDATE_INVOLVED_PARTY", HttpMethod.PATCH, "https://api.ing.com/v5/involved-parties/{uuid}"),
+    CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP("CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP", HttpMethod.POST, "https://api.ing.com/v1/organisation-hierarchies/relationship/{uuid}/close"),
+    UPDATE_ORGANISATION_UNIT_NAME("UPDATE_ORGANISATION_UNIT_NAME", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/organisation-unit-names "),
+    CREATE_POSTAL_ADDRESS("CREATE_POSTAL_ADDRESS", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/postal-addresses");
+    UPDATE_POSTAL_ADDRESS("UPDATE_POSTAL_ADDRESS", HttpMethod.PATCH, "https://api.ing.com/v5/involved-parties/{uuid}/postal-addresses/{postalAddressUsageType}")
+
+
+
+    public final String label;
+    public final String method;
+    public final String endpoint;
+
+    RegkeyEnum(String label, String method, String endpoint) {
+        this.label = label;
+        this.method = method;
+        this.endpoint = endpoint;
+    }
+
+    /**
+     * Dynamically replaces path variables like {uuid} with actual values.
+     */
+    public String resolveEndpoint(String... values) {
+        String resolved = endpoint;
+        for (String value : values) {
+            resolved = resolved.replaceFirst("\\{[^}]+}", value);
+        }
+        return resolved;
+    }
+
+    @Override
+    public String toString() {
+        return label + " || " + method + SPACE + endpoint;
+    }
+}
+    public CompletableFuture<UpdateOrganisationUnitNameV5Response> updateOrganisationUnitName(
+            UpdateOrganisationUnitNameV5Request payload, String uuid, String nameType) {
+        try {
+            String url = RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME.resolveEndpoint(uuid, nameType);
+            Request request = new RichHttpRequestBuilder()
+                    .withUrl(url)
+                    .withMethod(Method.Patch())
+                    .withJsonContent(payload)
+                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
+                    .build();
+            return apiClient.apply(request)
+                    .thenApply(response -> {
+                        try {
+                            return objectMapper.readValue(response.contentString(), UpdateOrganisationUnitNameV5Response.class);
+                        } catch (Exception e) {
+                            throw new DataDistributionApiException(
+                                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
+                                    "Failed to parse response from updateOrganisationUnitName API",
+                                    e.getMessage()
+                            );
+                        }
+                    });
+        } catch (RichHttpRequestBuilderException e) {
+            throw new DataDistributionApiException(
+                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
+                    "Failed to build request for updateOrganisationUnitName API",
+                    e.getMessage()
+            );
+        }
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UpdateOrganisationUnitNameV5Response {
+
+    @JsonProperty("organisationUnitName")
+    private OrganisationUnitNameResponse organisationUnitName;
+
+    @JsonProperty("_links")
+    private InvolvedPartiesLinkSelfResponse links;
+
+}
+
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UpdateOrganisationUnitNameV5Request {
+
+    @JsonProperty("organisationUnitName")
+    private String organisationUnitName;
+
+    @JsonProperty("effectiveDate")
+    private String effectiveDate;
+
+    @JsonProperty("endDate")
+    private String endDate;
+
+    @JsonProperty("dataSource")
+    private String dataSource;
+
+}
+
 Involved Party API
 
 Share
@@ -80,129 +204,4 @@ _links object
 self object
 href string
 example: https://(hostname):(port)/v5/involved-parties/{uuid}/names
-package com.ing.datadist.api.model;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-
-@Generated
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UpdateOrganisationUnitNameV5Request {
-
-    @JsonProperty("organisationUnitName")
-    private String organisationUnitName;
-
-    @JsonProperty("effectiveDate")
-    private String effectiveDate;
-
-    @JsonProperty("endDate")
-    private String endDate;
-
-    @JsonProperty("dataSource")
-    private String dataSource;
-
-}
-
-package com.ing.datadist.api.model;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-
-@Generated
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UpdateOrganisationUnitNameV5Response {
-
-    @JsonProperty("organisationUnitName")
-    private OrganisationUnitNameResponse organisationUnitName;
-
-    @JsonProperty("_links")
-    private InvolvedPartiesLinkSelfResponse links;
-
-}
-
-package com.ing.datadist.api.utils;
-
-
-import jakarta.ws.rs.HttpMethod;
-import lombok.Generated;
-
-import static org.apache.commons.lang3.StringUtils.SPACE;
-
-@Generated
-public enum RegkeyEnum {
-    // ✅ OnePam endpoints
-    CREATE_INVOLVED_PARTY("CREATE_INVOLVED_PARTY", HttpMethod.POST, "https://api.ing.com/v5/involved-parties"),
-    UPDATE_EXTERNAL_IDENTIFIER("UPDATE_EXTERNAL_IDENTIFIER", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/external-identifiers"),
-    CREATE_ORGANISATION_UNIT_HIERARCHY("CREATE_ORGANISATION_UNIT_HIERARCHY", HttpMethod.POST, "https://api.ing.com/v1/organisation-hierarchies/relationship"),
-    SEARCH_ORGANISATION_UNIT("SEARCH_ORGANISATION_UNIT", HttpMethod.POST, "https://api.ing.com/v2/partyandagreementsearch/involved-parties/organisation-units/search"),
-    UPDATE_INVOLVED_PARTY("UPDATE_INVOLVED_PARTY", HttpMethod.PATCH, "https://api.ing.com/v5/involved-parties/{uuid}"),
-    CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP("CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP", HttpMethod.POST, "https://api.ing.com/v1/organisation-hierarchies/relationship/{uuid}/close"),
-    UPDATE_ORGANISATION_UNIT_NAME("UPDATE_ORGANISATION_UNIT_NAME", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/organisation-unit-names "),
-    CREATE_POSTAL_ADDRESS("CREATE_POSTAL_ADDRESS", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/postal-addresses");
-    UPDATE_POSTAL_ADDRESS("UPDATE_POSTAL_ADDRESS", HttpMethod.PATCH, "https://api.ing.com/v5/involved-parties/{uuid}/postal-addresses/{postalAddressUsageType}")
-
-
-
-    public final String label;
-    public final String method;
-    public final String endpoint;
-
-    RegkeyEnum(String label, String method, String endpoint) {
-        this.label = label;
-        this.method = method;
-        this.endpoint = endpoint;
-    }
-
-    /**
-     * Dynamically replaces path variables like {uuid} with actual values.
-     */
-    public String resolveEndpoint(String... values) {
-        String resolved = endpoint;
-        for (String value : values) {
-            resolved = resolved.replaceFirst("\\{[^}]+}", value);
-        }
-        return resolved;
-    }
-
-    @Override
-    public String toString() {
-        return label + " || " + method + SPACE + endpoint;
-    }
-}
-
-    public CompletableFuture<UpdateOrganisationUnitNameV5Response> updateOrganisationUnitName(
-            UpdateOrganisationUnitNameV5Request payload, String uuid, String nameType) {
-        try {
-            String url = RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME.resolveEndpoint(uuid, nameType);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Patch())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            return objectMapper.readValue(response.contentString(), UpdateOrganisationUnitNameV5Response.class);
-                        } catch (Exception e) {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
-                                    "Failed to parse response from updateOrganisationUnitName API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
-                    "Failed to build request for updateOrganisationUnitName API",
-                    e.getMessage()
-            );
-        }
     }

@@ -1,0 +1,84 @@
+package com.ing.datadist.api.service;
+
+import com.ing.datadist.api.model.*;
+import com.ing.datadist.domain.OrganisationUnitDomainWrapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
+
+@Service
+@Slf4j
+public class UpdateOrganisationUnitService {
+
+    public void updateOrganisationUnit(OrganisationUnitDomainWrapper wrapper, SearchInvolvedPartiesResponseV1 response) throws Exception {
+
+        String uuid = wrapper.getOpsUUID();
+        List<SearchOrganisationUnitResponseV1> organisationUnits = response.getOrganisationUnits();
+
+
+        for (SearchOrganisationUnitResponseV1 organisationUnit : organisationUnits) {
+            List<SearchOrganisationUnitNameResponseV1> organisationUnitNames = organisationUnit.getOrganisationUnitNames();
+            List<SearchOrganisationUnitAddressResponseV1> postalAddresses = organisationUnit.getPostalAddresses();
+            List<SearchOrganisationUnitDigitalAddressesV1> digitalAddresses = organisationUnit.getDigitalAddresses();
+
+            for (SearchOrganisationUnitNameResponseV1 name : organisationUnitNames) {
+                if (Objects.equals(wrapper.getOrganisationUnitName(), name.getOrganisationUnitName())) {
+                    log.info("Update organisationUnit name changed for uuid:{} old:{} new:{} ", uuid, wrapper.getOrganisationUnitName(), name.getOrganisationUnitName());
+                    //Call update name API
+                }
+            }
+
+            for (SearchOrganisationUnitAddressResponseV1 address : postalAddresses) {
+                if (Objects.equals(wrapper.getPostalAddressStreetNm(), address.getStreetName())) {
+                    log.info("Update organisationUnit StreetName changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressStreetNm(), address.getStreetName());
+                    //Call update postal addr API
+                }
+
+                if (Objects.equals(wrapper.getPostalAddressHouseNum(), address.getHouseNumber())) {
+                    log.info("Update organisationUnit HouseNum changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressHouseNum(), address.getHouseNumber());
+                    //Call update postal addr API
+                }
+
+                if (Objects.equals(wrapper.getPostalAddressHouseAdd(), address.getHouseNumberAddition())) {
+                    log.info("Update organisationUnit HouseAdd changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressHouseAdd(), address.getHouseNumberAddition());
+                    //Call update postal addr API
+                }
+
+                if (Objects.equals(wrapper.getPostalAddressPostalCd(), address.getPostalCode())) {
+                    log.info("Update organisationUnit PostalCode changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressPostalCd(), address.getPostalCode());
+                    //Call update postal addr API
+                }
+
+                if (Objects.equals(wrapper.getPostalAddressCityName(), address.getCityName())) {
+                    log.info("Update organisationUnit CityName changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressCityName(), address.getCityName());
+                    //Call update postal addr API
+                }
+
+                if (Objects.equals(wrapper.getPostalAddressCntryCd(), address.getCountryCode())) {
+                    log.info("Update organisationUnit CountryCode changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressCntryCd(), address.getCountryCode());
+                    //Call update postal addr API
+                }
+            }
+
+            for (SearchOrganisationUnitDigitalAddressesV1 digitalAddress : digitalAddresses) {
+                if (Objects.equals(wrapper.getDigitalAddrEmail(), digitalAddress.getFullDigitalAddress())) {
+                    log.info("Update organisationUnit FullDigitalAddress changed for uuid:{} old:{} new:{} ", uuid, wrapper.getDigitalAddrEmail(), digitalAddress.getFullDigitalAddress());
+                    //Call update digital addr API
+                }
+
+                if (Objects.equals(wrapper.getDigitalAddrFullTefgn(), digitalAddress.getFullDigitalAddress())) {
+                    log.info("Update organisationUnit FullDigitalAddress changed for uuid:{} old:{} new:{} ", uuid, wrapper.getDigitalAddrFullTefgn(), digitalAddress.getFullDigitalAddress());
+                    //Call update digital addr API
+                }
+
+                if (Objects.equals(wrapper.getDigitalAddrFullTel(), digitalAddress.getFullDigitalAddress())) {
+                    log.info("Update organisationUnit FullDigitalAddress changed for uuid:{} old:{} new:{} ", uuid, wrapper.getDigitalAddrFullTel(), digitalAddress.getFullDigitalAddress());
+                    //Call update digital addr API
+                }
+            }
+
+        }
+    }
+}

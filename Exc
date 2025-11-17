@@ -1,3 +1,89 @@
+  location: class com.ing.datadist.api.service.OrganisationUnitService
+[INFO] 22 errors
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  13.967 s
+[INFO] Finished at: 2025-11-17T17:09:39+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project DataDistribution: Compilation failure: Compilation failure:
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/exception/DataDistributionApiException.java:[71,29] cannot find symbol
+[ERROR]   symbol:   variable UPDATE_EXTERNAL_ID
+[ERROR]   location: class com.ing.datadist.api.utils.RegkeyEnum
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[57,23] cannot find symbol       
+[ERROR]   symbol:   class DataDistributionApiException
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[58,21] cannot find symbol       
+[ERROR]   symbol:   variable RegkeyEnum
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[59,21] cannot find symbol       
+[ERROR]   symbol:   variable HttpStatus
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[67,23] cannot find symbol       
+[ERROR]   symbol:   class DataDistributionApiException
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[68,21] cannot find symbol       
+[ERROR]   symbol:   variable RegkeyEnum
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[69,21] cannot find symbol       
+[ERROR]   symbol:   variable HttpStatus
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[84,35] cannot find symbol       
+[ERROR]   symbol:   class DataDistributionApiException
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[85,33] cannot find symbol       
+[ERROR]   symbol:   variable RegkeyEnum
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[86,33] cannot find symbol       
+[ERROR]   symbol:   variable HttpStatus
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[97,35] cannot find symbol       
+[ERROR]   symbol:   class DataDistributionApiException
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[98,33] cannot find symbol       
+[ERROR]   symbol:   variable RegkeyEnum
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[99,33] cannot find symbol       
+[ERROR]   symbol:   variable HttpStatus
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[110,35] cannot find symbol      
+[ERROR]   symbol:   class DataDistributionApiException
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[111,33] cannot find symbol      
+[ERROR]   symbol:   variable RegkeyEnum
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[112,33] cannot find symbol      
+[ERROR]   symbol:   variable HttpStatus
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[128,34] cannot find symbol      
+[ERROR]   symbol:   class DataDistributionApiException
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[130,17] cannot find symbol      
+[ERROR]   symbol:   class DataDistributionApiException
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[130,52] cannot find symbol      
+[ERROR]   symbol:   class DataDistributionApiException
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[143,23] cannot find symbol      
+[ERROR]   symbol:   class DataDistributionApiException
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[144,21] cannot find symbol      
+[ERROR]   symbol:   variable RegkeyEnum
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[145,21] cannot find symbol      
+[ERROR]   symbol:   variable HttpStatus
+[ERROR]   location: class com.ing.datadist.api.service.OrganisationUnitService
+[ERROR] -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+PS C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution> 
+
+
 package com.ing.datadist.api.service;
 
 import com.ing.datadist.api.model.CreateOrganisationUnitRequest;
@@ -28,10 +114,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.CompletableFuture;
 
-import com.ing.datadist.api.exception.OrganisationUnitCreationException;
-import com.ing.datadist.api.exception.ExternalIdentifierUpdateException;
-import com.ing.datadist.api.exception.PostalAddressCreationException;
-import com.ing.datadist.api.exception.OrganisationHierarchyCreationException;
+import com.ing.datadist.api.exception.DataDistributionApiException.OrganisationUnitCreationException;
+import com.ing.datadist.api.exception.DataDistributionApiException.ExternalIdentifierUpdateException;
+import com.ing.datadist.api.exception.DataDistributionApiException.PostalAddressCreationException;
+import com.ing.datadist.api.exception.DataDistributionApiException.OrganisationHierarchyCreationException;
 import java.util.concurrent.CompletionException;
 @Service
 @Slf4j
@@ -335,6 +421,98 @@ private InvolvedPartiesOrganisationUnitResponse createOrganisationUnit(String or
             log.error("Failed to create organisation unit hierarchy", e);
             Thread.currentThread().interrupt();
             throw new RuntimeException("Hierarchy creation failed", e);
+        }
+    }
+}
+
+package com.ing.datadist.api.exception;
+
+import com.ing.datadist.api.utils.RegkeyEnum;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import java.text.MessageFormat;
+import org.springframework.http.HttpStatus;
+
+import static com.ing.datadist.api.utils.DataDistributionConstants.CLIENT_ERROR;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
+@Slf4j
+@Getter
+@ToString
+@EqualsAndHashCode(callSuper = true)
+public class DataDistributionApiException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
+    private final int code;
+    private final String innerMessage;
+    private final String timeStamp;
+
+    private static final String LOG_MESSAGE = "ReqKey {0} - DataDistributionApiException message {1} - innerMessage {2}";
+    private static final String WARNING_CODE = "WarningCode";
+
+    public DataDistributionApiException(RegkeyEnum reqKeyEnum, String message, String innerMessage) {
+        this(reqKeyEnum, CLIENT_ERROR, message, innerMessage);
+    }
+
+    public DataDistributionApiException(RegkeyEnum reqKeyEnum, int code, String message, String innerMessage) {
+        super(message);
+        this.code = code;
+        this.innerMessage = innerMessage;
+        this.timeStamp = String.valueOf(System.currentTimeMillis());
+
+        if (isNotBlank(message) && isNotBlank(innerMessage)) {
+            MDC.put(WARNING_CODE, innerMessage);
+            log.error(MessageFormat.format(LOG_MESSAGE, reqKeyEnum.label, message, innerMessage));
+        }
+    }
+
+    public DataDistributionApiException(RegkeyEnum regkeyEnum, HttpStatus httpStatus, String innerMessage) {
+        super(httpStatus.getReasonPhrase());
+        this.code = httpStatus.value();
+        this.innerMessage = innerMessage;
+        this.timeStamp = String.valueOf(System.currentTimeMillis());
+
+        if (isNotBlank(httpStatus.getReasonPhrase()) && isNotBlank(innerMessage)) {
+            MDC.put(WARNING_CODE, innerMessage);
+            log.error(MessageFormat.format(LOG_MESSAGE, regkeyEnum.label, httpStatus.getReasonPhrase(), innerMessage));
+        }
+    }
+
+    public static DataDistributionApiException from(RegkeyEnum key, HttpStatus status, String innerMessage) {
+        return new DataDistributionApiException(key, status, innerMessage);
+    }
+    // Creation failure
+    public static class OrganisationUnitCreationException extends DataDistributionApiException {
+        public OrganisationUnitCreationException(String msg) {
+            super(RegkeyEnum.CREATE_INVOLVED_PARTY, msg, msg);
+        }
+    }
+
+    // External Identifier update failure
+    public static class ExternalIdentifierUpdateException extends DataDistributionApiException {
+        public ExternalIdentifierUpdateException(String msg, Throwable cause) {
+            super(RegkeyEnum.UPDATE_EXTERNAL_ID, msg, cause != null ? cause.getMessage() : msg);
+            initCause(cause);
+        }
+    }
+
+    // Postal Address creation failure
+    public static class PostalAddressCreationException extends DataDistributionApiException {
+        public PostalAddressCreationException(String msg, Throwable cause) {
+            super(RegkeyEnum.CREATE_POSTAL_ADDRESS, msg, cause != null ? cause.getMessage() : msg);
+            initCause(cause);
+        }
+    }
+
+    // Organisation hierarchy creation failure
+    public static class OrganisationHierarchyCreationException extends DataDistributionApiException {
+        public OrganisationHierarchyCreationException(String msg, Throwable cause) {
+            super(RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY, msg, cause != null ? cause.getMessage() : msg);
+            initCause(cause);
         }
     }
 }

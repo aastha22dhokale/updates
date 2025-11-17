@@ -1,134 +1,106 @@
-Involved Party API
+package com.ing.datadist.api.model;
 
-Share
-View in Console
-Back to API details
-Update a postal address of an Involved Party
-patch
-/v5/involved-parties/{uuid}/postal-addresses/{postalAddressUsageType}
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
-🏷️ PostalAddresses
-
-This endpoints allows updating only active (current) postal address. It is only possible to update lastVerificationDate, endDate, and deliveryFailureReasonType. When updating an active postal address, and a future postal address of the same usage type exists for the same party, the endDate of the active postal address does not exceed the effective date of the future postal address.
-
-header params
-X-ING-LastUpdateUser string required
-User identifies the user; system; or process, who last updated the instance of a data object.
-
-path params
-uuid string required
-UUID of an Involved party.
-
-postalAddressUsageType string required
-Distinguishes between Postal Address types according to their usage.
-
-Request body
-The address attributes to update
+import java.io.Serializable;
 
 
-application/json
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Generated
+public class PostalAddressResponse implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-Schema
-Examples
-▾
-object
-lastVerificationDate string (date-time)
-timestamp
+    @JsonProperty("postalAddressUsageType")
+    private String postalAddressUsageType;
 
-example: 2023-05-03T10:11:12.999Z
-endDate string (date-time)
-timestamp
+    @JsonProperty("countryCode")
+    private String countryCode;
 
-example: 2050-12-12T23:59:59.999+02:00
-deliveryFailureReasonType string
-example: ADR_NOT_EXST
-Responses
+    @JsonProperty("countryRegionCode")
+    private String countryRegionCode;
 
-200
+    @JsonProperty("districtName")
+    private String districtName;
 
-400
+    @JsonProperty("cityName")
+    private String cityName;
 
-404
+    @JsonProperty("cityAreaName")
+    private String cityAreaName;
 
-500
-200 OK
+    @JsonProperty("regionName")
+    private String regionName;
 
+    @JsonProperty("postalCode")
+    private String postalCode;
 
-application/json
+    @JsonProperty("streetName")
+    private String streetName;
 
-Schema
-Examples
-▾
-object
-▾
-postalAddress object
-postalAddressUsageType string
-example: RSDNT_ADR
-countryCode string
-example: IT
-countryRegionCode string
-example: IT-RM
-districtName string
-example: Zuidoost
-cityName string
-example: ROMA
-cityAreaName string
-example: Fratton
-regionName string
-example: Greater New York
-postalCode string
-example: 808
-streetName string
-example: Rodeo Drive
-houseNumber string
-example: 123
-houseNumberAddition string
-example: A
-buildingName string
-example: White House
-deliveryInformation string
-example: Watch out for the angry dog
-floor string
-example: 5
-locationUnitNumber string
-example: 910
-departmentName string
-example: Retail department
-subdepartmentName string
-example: Electronics
-poBoxNumber string
-example: 123
-streetType string
-example: ES_CALLE
-unstructuredAddressLine1 string
-example: Tempura Road
-unstructuredAddressLine2 string
-example: Big house on the hill
-unstructuredAddressLine3 string
-example: Third house from the right
-deliveryFailureReasonType string
-example: ADR_NOT_EXST
-dataSource string
-example: FOS_IT
-lastUpdateUser string
-example: OnePam
-lastUpdateDate string
-example: 2021-04-27T09:11:11.111Z
-effectiveDate string
-example: 2020-10-10T08:11:12.345Z
-lastVerificationDate string
-example: 2023-05-03T10:11:12.999Z
-endDate string
-example: 2050-12-12T21:59:59.999Z
-▾
-_links object
-▾
-self object
-href string
-example: https://(hostname):(port)/v5/involved-parties/a15f4243-e38b-4d96-af99-9c40c8dd08ab/post-addresses
-About Touchpoint 
-Become a partner 
-Terms & Conditions
+    @JsonProperty("houseNumber")
+    private String houseNumber;
+
+    @JsonProperty("houseNumberAddition")
+    private String houseNumberAddition;
+
+    @JsonProperty("buildingName")
+    private String buildingName;
+
+    @JsonProperty("deliveryInformation")
+    private String deliveryInformation;
+
+    @JsonProperty("floor")
+    private String floor;
+
+    @JsonProperty("locationUnitNumber")
+    private String locationUnitNumber;
+
+    @JsonProperty("departmentName")
+    private String departmentName;
+
+    @JsonProperty("subdepartmentName")
+    private String subdepartmentName;
+
+    @JsonProperty("poBoxNumber")
+    private String poBoxNumber;
+
+    @JsonProperty("streetType")
+    private String streetType;
+
+    @JsonProperty("unstructuredAddressLine1")
+    private String unstructuredAddressLine1;
+
+    @JsonProperty("unstructuredAddressLine2")
+    private String unstructuredAddressLine2;
+
+    @JsonProperty("unstructuredAddressLine3")
+    private String unstructuredAddressLine3;
+
+    @JsonProperty("deliveryFailureReasonType")
+    private String deliveryFailureReasonType;
+
+    @JsonProperty("dataSource")
+    private String dataSource;
+
+    @JsonProperty("lastUpdateUser")
+    private String lastUpdateUser;
+
+    @JsonProperty("lastUpdateDate")
+    private String lastUpdateDate;
+
+    @JsonProperty("effectiveDate")
+    private String effectiveDate;
+
+    @JsonProperty("lastVerificationDate")
+    private String lastVerificationDate;
+
+    @JsonProperty("endDate")
+    private String endDate;
+}
 
 package com.ing.datadist.api.utils;
 
@@ -149,6 +121,9 @@ public enum RegkeyEnum {
     CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP("CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP", HttpMethod.POST, "https://api.ing.com/v1/organisation-hierarchies/relationship/{uuid}/close"),
     UPDATE_ORGANISATION_UNIT_NAME("UPDATE_ORGANISATION_UNIT_NAME", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/organisation-unit-names "),
     CREATE_POSTAL_ADDRESS("CREATE_POSTAL_ADDRESS", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/postal-addresses");
+    UPDATE_POSTAL_ADDRESS("UPDATE_POSTAL_ADDRESS", HttpMethod.PATCH, "https://api.ing.com/v5/involved-parties/{uuid}/postal-addresses/{postalAddressUsageType}")
+
+
 
     public final String label;
     public final String method;

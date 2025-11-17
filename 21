@@ -1,429 +1,178 @@
-package com.ing.datadist.api.service;
+Involved Party API
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ing.apisdk.toolkit.connectivity.api.JavaService;
-import com.ing.apisdk.toolkit.connectivity.transport.http.japi.RichHttpRequestBuilder;
-import com.ing.apisdk.toolkit.connectivity.transport.http.japi.RichHttpRequestBuilderException;
+Share
+View in Console
+Back to API details
+Update a postal address of an Involved Party
+patch
+/v5/involved-parties/{uuid}/postal-addresses/{postalAddressUsageType}
 
-import com.ing.datadist.api.config.InvolvedPartyApiProperties;
-import com.ing.datadist.api.exception.DataDistributionApiException;
-import com.ing.datadist.api.model.*;
-import com.ing.datadist.api.utils.RegkeyEnum;
-import com.twitter.finagle.http.Method;
-import com.twitter.finagle.http.Request;
-import com.twitter.finagle.http.Response;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-import scala.collection.JavaConverters;
+🏷️ PostalAddresses
 
-import java.util.Map;
+This endpoints allows updating only active (current) postal address. It is only possible to update lastVerificationDate, endDate, and deliveryFailureReasonType. When updating an active postal address, and a future postal address of the same usage type exists for the same party, the endDate of the active postal address does not exceed the effective date of the future postal address.
 
-import java.util.concurrent.CompletableFuture;
+header params
+X-ING-LastUpdateUser string required
+User identifies the user; system; or process, who last updated the instance of a data object.
 
-@Slf4j
-@Component
-public class OnePamRepository {
+path params
+uuid string required
+UUID of an Involved party.
 
-    private final JavaService<Request, Response> apiClient;
-    private final ObjectMapper objectMapper;
-    private final InvolvedPartyApiProperties apiProperties;
+postalAddressUsageType string required
+Distinguishes between Postal Address types according to their usage.
 
-    public OnePamRepository(@Qualifier("integrationServiceGeneric") JavaService<Request, Response> apiClient,
-                            ObjectMapper objectMapper,
-                            InvolvedPartyApiProperties apiProperties) {
-        this.apiClient = apiClient;
-        this.objectMapper = objectMapper;
-        this.apiProperties = apiProperties;
+Request body
+The address attributes to update
+
+
+application/json
+
+Schema
+Examples
+▾
+object
+lastVerificationDate string (date-time)
+timestamp
+
+example: 2023-05-03T10:11:12.999Z
+endDate string (date-time)
+timestamp
+
+example: 2050-12-12T23:59:59.999+02:00
+deliveryFailureReasonType string
+example: ADR_NOT_EXST
+Responses
+
+200
+
+400
+
+404
+
+500
+200 OK
+
+
+application/json
+
+Schema
+Examples
+▾
+object
+▾
+postalAddress object
+postalAddressUsageType string
+example: RSDNT_ADR
+countryCode string
+example: IT
+countryRegionCode string
+example: IT-RM
+districtName string
+example: Zuidoost
+cityName string
+example: ROMA
+cityAreaName string
+example: Fratton
+regionName string
+example: Greater New York
+postalCode string
+example: 808
+streetName string
+example: Rodeo Drive
+houseNumber string
+example: 123
+houseNumberAddition string
+example: A
+buildingName string
+example: White House
+deliveryInformation string
+example: Watch out for the angry dog
+floor string
+example: 5
+locationUnitNumber string
+example: 910
+departmentName string
+example: Retail department
+subdepartmentName string
+example: Electronics
+poBoxNumber string
+example: 123
+streetType string
+example: ES_CALLE
+unstructuredAddressLine1 string
+example: Tempura Road
+unstructuredAddressLine2 string
+example: Big house on the hill
+unstructuredAddressLine3 string
+example: Third house from the right
+deliveryFailureReasonType string
+example: ADR_NOT_EXST
+dataSource string
+example: FOS_IT
+lastUpdateUser string
+example: OnePam
+lastUpdateDate string
+example: 2021-04-27T09:11:11.111Z
+effectiveDate string
+example: 2020-10-10T08:11:12.345Z
+lastVerificationDate string
+example: 2023-05-03T10:11:12.999Z
+endDate string
+example: 2050-12-12T21:59:59.999Z
+▾
+_links object
+▾
+self object
+href string
+example: https://(hostname):(port)/v5/involved-parties/a15f4243-e38b-4d96-af99-9c40c8dd08ab/post-addresses
+About Touchpoint 
+Become a partner 
+Terms & Conditions
+
+package com.ing.datadist.api.utils;
+
+
+import jakarta.ws.rs.HttpMethod;
+import lombok.Generated;
+
+import static org.apache.commons.lang3.StringUtils.SPACE;
+
+@Generated
+public enum RegkeyEnum {
+    // ✅ OnePam endpoints
+    CREATE_INVOLVED_PARTY("CREATE_INVOLVED_PARTY", HttpMethod.POST, "https://api.ing.com/v5/involved-parties"),
+    UPDATE_EXTERNAL_IDENTIFIER("UPDATE_EXTERNAL_IDENTIFIER", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/external-identifiers"),
+    CREATE_ORGANISATION_UNIT_HIERARCHY("CREATE_ORGANISATION_UNIT_HIERARCHY", HttpMethod.POST, "https://api.ing.com/v1/organisation-hierarchies/relationship"),
+    SEARCH_ORGANISATION_UNIT("SEARCH_ORGANISATION_UNIT", HttpMethod.POST, "https://api.ing.com/v2/partyandagreementsearch/involved-parties/organisation-units/search"),
+    UPDATE_INVOLVED_PARTY("UPDATE_INVOLVED_PARTY", HttpMethod.PATCH, "https://api.ing.com/v5/involved-parties/{uuid}"),
+    CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP("CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP", HttpMethod.POST, "https://api.ing.com/v1/organisation-hierarchies/relationship/{uuid}/close"),
+    UPDATE_ORGANISATION_UNIT_NAME("UPDATE_ORGANISATION_UNIT_NAME", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/organisation-unit-names "),
+    CREATE_POSTAL_ADDRESS("CREATE_POSTAL_ADDRESS", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/postal-addresses");
+
+    public final String label;
+    public final String method;
+    public final String endpoint;
+
+    RegkeyEnum(String label, String method, String endpoint) {
+        this.label = label;
+        this.method = method;
+        this.endpoint = endpoint;
     }
 
-    public CompletableFuture<InvolvedPartiesOrganisationUnitResponse> createInvolvedParty(CreateOrganisationUnitRequest payload) {
-        try {
-            String url = RegkeyEnum.CREATE_INVOLVED_PARTY.endpoint;
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Post())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUse", "IN_ADMIN")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            return objectMapper.readValue(response.contentString(), InvolvedPartiesOrganisationUnitResponse.class);
-                        } catch (Exception e) {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.CREATE_INVOLVED_PARTY,
-                                    "Failed to parse response from Involved Party API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.CREATE_INVOLVED_PARTY,
-                    "Failed to build request for create involved party API",
-                    e.getMessage()
-            );
+    /**
+     * Dynamically replaces path variables like {uuid} with actual values.
+     */
+    public String resolveEndpoint(String... values) {
+        String resolved = endpoint;
+        for (String value : values) {
+            resolved = resolved.replaceFirst("\\{[^}]+}", value);
         }
+        return resolved;
     }
 
-    public CompletableFuture<Void> updateExternalIdentifier(String uuid, UpdateExternalIdentifierOrganisationUnitRequest payload) {
-        try {
-            String url = RegkeyEnum.UPDATE_EXTERNAL_IDENTIFIER.resolveEndpoint(uuid);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Post())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUse", "IN_ADMIN")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                            return null;
-                        } else {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.UPDATE_EXTERNAL_IDENTIFIER,
-                                    "Failed to update external identifier",
-                                    "Status: " + response.statusCode()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.UPDATE_EXTERNAL_IDENTIFIER,
-                    "Failed to build request for update external identifier API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    public CompletableFuture<Void> createOrganisationUnitHierarchy(OrganisationUnitOrganisationRelationshipRequest payload) {
-        try {
-            String url = RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY.endpoint;
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Post())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUse", "IN_ADMIN")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                            return null;
-                        } else {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY,
-                                    "Failed to create organisation unit hierarchy",
-                                    "Status: " + response.statusCode()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY,
-                    "Failed to build request for organisation unit hierarchy API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    public CompletableFuture<SearchInvolvedPartiesResponseV1> searchInvolvedPartyByInternalIdentifier(SearchInvolvedPartiesRequestV1 payload) {
-        try {
-            String url = RegkeyEnum.SEARCH_ORGANISATION_UNIT.endpoint;  // ✅ dynamically from enum
-            log.info("searchInvolvedPartyByInternalIdentifier request payload: {}", payload);
-            String jsonPayload = objectMapper.writeValueAsString(payload);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Post())
-                    .withJsonContent(jsonPayload)
-                    .withHeader("Content-Type", "application/json")
-                    .build();
-            printRequest(request);
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            log.info("searchInvolvedPartyByInternalIdentifier response: {}", response);
-                            return objectMapper.readValue(response.contentString(), SearchInvolvedPartiesResponseV1.class);
-                        } catch (Exception e) {
-                            log.error("searchInvolvedPartyByInternalIdentifier error: {}", e.getMessage());
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.SEARCH_ORGANISATION_UNIT,
-                                    "Failed to parse response from search organisation unit API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (Exception e) {
-            log.error("searchInvolvedPartyByInternalIdentifier API error: {}", e.getMessage());
-            throw new DataDistributionApiException(
-                    RegkeyEnum.SEARCH_ORGANISATION_UNIT,
-                    "Failed to build request for search organisation unit API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    public CompletableFuture<UpdateOrganisationUnitNameV5Response> updateOrganisationUnitName(
-            UpdateOrganisationUnitNameV5Request payload, String uuid, String nameType) {
-        try {
-            String url = RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME.resolveEndpoint(uuid, nameType);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Patch())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            return objectMapper.readValue(response.contentString(), UpdateOrganisationUnitNameV5Response.class);
-                        } catch (Exception e) {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
-                                    "Failed to parse response from updateOrganisationUnitName API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
-                    "Failed to build request for updateOrganisationUnitName API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    public CompletableFuture<UpdateInvolvedPartyResponseV5> updateInvolvedParty(UpdateInvolvedPartyRequestV5 payload, String uuid) {
-        try {
-            String url = RegkeyEnum.UPDATE_INVOLVED_PARTY.resolveEndpoint(uuid);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Patch())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            return objectMapper.readValue(response.contentString(), UpdateInvolvedPartyResponseV5.class);
-                        } catch (Exception e) {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.UPDATE_INVOLVED_PARTY,
-                                    "Failed to parse response for Update InvolvedParty Request API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.UPDATE_INVOLVED_PARTY,
-                    "Failed to build request for Update InvolvedParty Request API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    private static void printRequest(Request req) {
-        try {
-            log.info("----- Request Details -----");
-            log.info("Method: {}", req.method());
-            log.info("URI: {}", req.uri());
-            log.info("Version: {}", req.version());
-            Map<String, String> headerMap = JavaConverters.mapAsJavaMapConverter(req.headerMap()).asJava();
-            for (Map.Entry<String, String> entry : headerMap.entrySet()) {
-                log.info("Header: {}: {}", entry.getKey(), entry.getValue());
-            }
-            log.info("Body: {}", req.contentString());
-            log.info("---------------------------");
-        } catch (Exception e) {
-            log.error("Exception while printing request", e);
-        }
-    }
-
-    public CompletableFuture<Void> createPostalAddress(String uuid, CreatePostalAddressRequest payload) {
-        try {
-            String url = RegkeyEnum.CREATE_POSTAL_ADDRESS.resolveEndpoint(uuid);
-            log.info("Calling OnePAM API to create postal address for UUID: {}", uuid);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Patch())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                            log.info("Postal address created successfully for UUID: {}", uuid);
-                            return null;
-                        } else {
-                            log.error("Failed to create postal address. Status: {}", response.statusCode());
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.CREATE_POSTAL_ADDRESS,
-                                    "Failed to create postal address",
-                                    "Status: " + response.statusCode()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.CREATE_POSTAL_ADDRESS,
-                    "Failed to build request for postal address creation",
-                    e.getMessage()
-            );
-        }
-    }
-
-    //fixme need fetch the even OrganisationUnitHierarchy uuid from Accounting table later
-    public OrganisationUnitOrganisationRelationshipResponse closeOrganisationHierarchyRelationship(String uuid) {
-        try {
-            String url = apiProperties.getUrl() + "/v1/organisation-hierarchies/relationship/" + uuid + "/close";
-            log.info("Closing Organisation Hierarchy Relationship");
-            log.info("Request URL: {}", url);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Post())
-                    .withHeader("X-ING-LastUpdateUser", "IN_ADMIN")
-                    .build();
-            printRequest(request);
-            Response response = apiClient.apply(request).get();
-            log.info("Response Status: {}", response.statusCode());
-            log.info("Response Body: {}", response.contentString());
-            if (response.statusCode() >= 200) {
-                ObjectMapper mapper = new ObjectMapper();
-                return mapper.readValue(response.contentString(), OrganisationUnitOrganisationRelationshipResponse.class);
-            } else {
-                throw new DataDistributionApiException(
-                        RegkeyEnum.CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP,
-                        "Failed to close relationship",
-                        "Status: " + response.statusCode()
-                );
-            }
-        } catch (Exception e) {
-            log.error("Exception while closing Organisation Hierarchy Relationship for uuid={}", uuid, e);
-            throw new DataDistributionApiException(
-                    RegkeyEnum.CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP,
-                    "Error during closing organisation hierarchy relationship",
-                    e.getMessage()
-            );
-        }
-
+    @Override
+    public String toString() {
+        return label + " || " + method + SPACE + endpoint;
     }
 }
-
-package com.ing.datadist.api.service;
-
-import com.ing.datadist.api.model.*;
-import com.ing.datadist.domain.OrganisationUnitDomainWrapper;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Objects;
-
-@Service
-@Slf4j
-public class UpdateOrganisationUnitService {
-
-    public void updateOrganisationUnit(OrganisationUnitDomainWrapper wrapper, SearchInvolvedPartiesResponseV1 response) throws Exception {
-
-        String uuid = wrapper.getOpsUUID();
-        List<SearchOrganisationUnitResponseV1> organisationUnits = response.getOrganisationUnits();
-
-
-        for (SearchOrganisationUnitResponseV1 organisationUnit : organisationUnits) {
-            List<SearchOrganisationUnitNameResponseV1> organisationUnitNames = organisationUnit.getOrganisationUnitNames();
-            List<SearchOrganisationUnitAddressResponseV1> postalAddresses = organisationUnit.getPostalAddresses();
-            List<SearchOrganisationUnitDigitalAddressesV1> digitalAddresses = organisationUnit.getDigitalAddresses();
-
-            for (SearchOrganisationUnitNameResponseV1 name : organisationUnitNames) {
-                if (Objects.equals(wrapper.getOrganisationUnitName(), name.getOrganisationUnitName())) {
-                    log.info("Update organisationUnit name changed for uuid:{} old:{} new:{} ", uuid, wrapper.getOrganisationUnitName(), name.getOrganisationUnitName());
-                    //Call update name API
-                }
-            }
-
-            for (SearchOrganisationUnitAddressResponseV1 address : postalAddresses) {
-                if (Objects.equals(wrapper.getPostalAddressStreetNm(), address.getStreetName())) {
-                    log.info("Update organisationUnit StreetName changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressStreetNm(), address.getStreetName());
-                    //Call update postal addr API
-                }
-
-                if (Objects.equals(wrapper.getPostalAddressHouseNum(), address.getHouseNumber())) {
-                    log.info("Update organisationUnit HouseNum changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressHouseNum(), address.getHouseNumber());
-                    //Call update postal addr API
-                }
-
-                if (Objects.equals(wrapper.getPostalAddressHouseAdd(), address.getHouseNumberAddition())) {
-                    log.info("Update organisationUnit HouseAdd changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressHouseAdd(), address.getHouseNumberAddition());
-                    //Call update postal addr API
-                }
-
-                if (Objects.equals(wrapper.getPostalAddressPostalCd(), address.getPostalCode())) {
-                    log.info("Update organisationUnit PostalCode changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressPostalCd(), address.getPostalCode());
-                    //Call update postal addr API
-                }
-
-                if (Objects.equals(wrapper.getPostalAddressCityName(), address.getCityName())) {
-                    log.info("Update organisationUnit CityName changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressCityName(), address.getCityName());
-                    //Call update postal addr API
-                }
-
-                if (Objects.equals(wrapper.getPostalAddressCntryCd(), address.getCountryCode())) {
-                    log.info("Update organisationUnit CountryCode changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressCntryCd(), address.getCountryCode());
-                    //Call update postal addr API
-                }
-            }
-
-            for (SearchOrganisationUnitDigitalAddressesV1 digitalAddress : digitalAddresses) {
-                if (Objects.equals(wrapper.getDigitalAddrEmail(), digitalAddress.getFullDigitalAddress())) {
-                    log.info("Update organisationUnit FullDigitalAddress changed for uuid:{} old:{} new:{} ", uuid, wrapper.getDigitalAddrEmail(), digitalAddress.getFullDigitalAddress());
-                    //Call update digital addr API
-                }
-
-                if (Objects.equals(wrapper.getDigitalAddrFullTefgn(), digitalAddress.getFullDigitalAddress())) {
-                    log.info("Update organisationUnit FullDigitalAddress changed for uuid:{} old:{} new:{} ", uuid, wrapper.getDigitalAddrFullTefgn(), digitalAddress.getFullDigitalAddress());
-                    //Call update digital addr API
-                }
-
-                if (Objects.equals(wrapper.getDigitalAddrFullTel(), digitalAddress.getFullDigitalAddress())) {
-                    log.info("Update organisationUnit FullDigitalAddress changed for uuid:{} old:{} new:{} ", uuid, wrapper.getDigitalAddrFullTel(), digitalAddress.getFullDigitalAddress());
-                    //Call update digital addr API
-                }
-            }
-
-        }
-    }
-}
-in this class we hv this method right,,,, public CompletableFuture<UpdateOrganisationUnitNameV5Response> updateOrganisationUnitName(
-            UpdateOrganisationUnitNameV5Request payload, String uuid, String nameType) {
-        try {
-            String url = RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME.resolveEndpoint(uuid, nameType);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Patch())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            return objectMapper.readValue(response.contentString(), UpdateOrganisationUnitNameV5Response.class);
-                        } catch (Exception e) {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
-                                    "Failed to parse response from updateOrganisationUnitName API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
-                    "Failed to build request for updateOrganisationUnitName API",
-                    e.getMessage()
-            );
-        }
-    }
-similar make methods for uodate postal addr and upd digital addr understand 

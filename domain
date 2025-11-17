@@ -1,0 +1,246 @@
+package com.ing.datadist.domain;
+
+import lombok.Data;
+
+@Data
+public class OrganisationUnitDomainWrapper {
+    private String opsUUID;
+    private String orgUUID;
+    private String orgExternalIdentifierVal;
+    private String opsExternalIdentifierVal;
+    private String organisationUnitName;
+    private String postalAddressStreetNm;
+    private String postalAddressHouseNum;
+    private String postalAddressHouseAdd;
+    private String postalAddressPostalCd;
+    private String postalAddressCityName;
+    private String postalAddressCntryCd;
+    private String opsExtIdDateOfIssue;
+    private String opsExtIdExpiryDate;
+    private String digitalAddrFullTel;
+    private String digitalAddrFullTefgn;
+    private String digitalAddrEmail;
+    private String recordActionType;
+}
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+import java.util.List;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class SearchOrganisationUnitResponseV1 {
+
+    @JsonProperty("involvedPartyIdentifier")
+    private String involvedPartyIdentifier;
+
+    @JsonProperty("involvedPartyType")
+    private String involvedPartyType;
+
+    @JsonProperty("dataSource")
+    private String dataSource;
+
+    @JsonProperty("logicalDataDomain")
+    private String logicalDataDomain;
+
+    @JsonProperty("countryOfResidence")
+    private String countryOfResidence;
+
+    @JsonProperty("preferredLanguage")
+    private String preferredLanguage;
+
+    @JsonProperty("financialLegalStatusType")
+    private String financialLegalStatusType;
+
+    @JsonProperty("channelOfEntry")
+    private String channelOfEntry;
+
+    @JsonProperty("effectiveDate")
+    private String effectiveDate;
+
+    @JsonProperty("endDate")
+    private String endDate;
+
+    @JsonProperty("dateCreated")
+    private String dateCreated;
+
+    @JsonProperty("lastUpdateUser")
+    private String lastUpdateUser;
+
+    @JsonProperty("lastUpdateDate")
+    private String lastUpdateDate;
+
+    @JsonProperty("organisationUnitStructureType")
+    private String organisationUnitStructureType;
+
+    @JsonProperty("postalAddresses")
+    private List<SearchOrganisationUnitAddressResponseV1> postalAddresses;
+
+    @JsonProperty("involvedPartyInternalIdentifiers")
+    private List<SearchOrganisationUnitInternalIdentifierResponseV1> involvedPartyInternalIdentifiers;
+
+    @JsonProperty("organisationUnitNames")
+    private List<SearchOrganisationUnitNameResponseV1> organisationUnitNames;
+
+    @JsonProperty("involvedPartyExternalIdentifiers")
+    private List<SearchOrganisationUnitExternalIdentifierResponseV1> involvedPartyExternalIdentifiers;
+
+    @JsonProperty("digitalAddresses")
+    private List<SearchOrganisationUnitDigitalAddressesV1> digitalAddresses;
+
+}
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class SearchOrganisationUnitNameResponseV1 {
+
+    @JsonProperty("organisationUnitNameType")
+    private String organisationUnitNameType;
+
+    @JsonProperty("organisationUnitName")
+    private String organisationUnitName;
+
+    @JsonProperty("dataSource")
+    private String dataSource;
+
+    @JsonProperty("lastUpdateUser")
+    private String lastUpdateUser;
+
+    @JsonProperty("lastUpdateDate")
+    private String lastUpdateDate;
+
+    @JsonProperty("effectiveDate")
+    private String effectiveDate;
+
+    @JsonProperty("endDate")
+    private String endDate;
+}
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class SearchOrganisationUnitAddressResponseV1 {
+
+    @JsonProperty("postalAddressUsageType")
+    private String postalAddressUsageType;
+
+    @JsonProperty("countryCode")
+    private String countryCode;
+
+    @JsonProperty("countryRegionCode")
+    private String countryRegionCode;
+
+    @JsonProperty("cityName")
+    private String cityName;
+
+    @JsonProperty("regionName")
+    private String regionName;
+
+    @JsonProperty("postalCode")
+    private String postalCode;
+
+    @JsonProperty("streetName")
+    private String streetName;
+
+    @JsonProperty("houseNumber")
+    private String houseNumber;
+
+    @JsonProperty("houseNumberAddition")
+    private String houseNumberAddition;
+
+    @JsonProperty("buildingName")
+    private String buildingName;
+
+    @JsonProperty("deliveryInformation")
+    private String deliveryInformation;
+
+    @JsonProperty("poBoxNumber")
+    private String poBoxNumber;
+
+    @JsonProperty("streetType")
+    private String streetType;
+
+    @JsonProperty("unstructuredAddressLine1")
+    private String unstructuredAddressLine1;
+
+    @JsonProperty("unstructuredAddressLine2")
+    private String unstructuredAddressLine2;
+
+    @JsonProperty("unstructuredAddressLine3")
+    private String unstructuredAddressLine3;
+
+    @JsonProperty("deliveryFailureReasonType")
+    private String deliveryFailureReasonType;
+
+    @JsonProperty("dataSource")
+    private String dataSource;
+
+    @JsonProperty("lastUpdateUser")
+    private String lastUpdateUser;
+
+    @JsonProperty("lastUpdateDate")
+    private String lastUpdateDate;
+
+    @JsonProperty("effectiveDate")
+    private String effectiveDate;
+
+    @JsonProperty("endDate")
+    private String endDate;
+}
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class SearchOrganisationUnitDigitalAddressesV1 {
+
+    @JsonProperty("digitalAddressType")
+    private String digitalAddressType;
+
+    @JsonProperty("digitalAddressUsageType")
+    private String digitalAddressUsageType;
+
+    @JsonProperty("fullDigitalAddress")
+    private String fullDigitalAddress;
+
+    @JsonProperty("deliveryFailureReasonType")
+    private String deliveryFailureReasonType;
+
+    @JsonProperty("dataSource")
+    private String dataSource;
+
+    @JsonProperty("effectiveDate")
+    private String effectiveDate;
+
+    @JsonProperty("endDate")
+    private String endDate;
+
+    @JsonProperty("lastUpdateUser")
+    private String lastUpdateUser;
+
+    @JsonProperty("lastUpdateDate")
+    private String lastUpdateDate;
+}

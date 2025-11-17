@@ -1,3 +1,21 @@
+Great — this is very clean, and YES you can extend this single class to hold ALL 4 flow exceptions inside it.
+
+You already have a base class:
+
+DataDistributionApiException
+
+Now we simply add nested static exception subclasses inside this SAME file.
+
+No more 4 files.
+No more multiple imports.
+All flow-level exceptions stay grouped.
+
+⸻
+
+✅ Updated DataDistributionApiException with ALL 4 flow exception types
+
+👉 Replace your file with this complete merged version:
+
 package com.ing.datadist.api.exception;
 
 import com.ing.datadist.api.utils.RegkeyEnum;
@@ -27,12 +45,10 @@ public class DataDistributionApiException extends RuntimeException {
     private static final String LOG_MESSAGE = "ReqKey {0} - DataDistributionApiException message {1} - innerMessage {2}";
     private static final String WARNING_CODE = "WarningCode";
 
-    // Constructor with RegkeyEnum and innerMessage
     public DataDistributionApiException(RegkeyEnum reqKeyEnum, String message, String innerMessage) {
         this(reqKeyEnum, CLIENT_ERROR, message, innerMessage);
     }
 
-    // Constructor with RegkeyEnum and custom code
     public DataDistributionApiException(RegkeyEnum reqKeyEnum, int code, String message, String innerMessage) {
         super(message);
         this.code = code;
@@ -45,7 +61,6 @@ public class DataDistributionApiException extends RuntimeException {
         }
     }
 
-    // Constructor using HttpStatus
     public DataDistributionApiException(RegkeyEnum regkeyEnum, HttpStatus httpStatus, String innerMessage) {
         super(httpStatus.getReasonPhrase());
         this.code = httpStatus.value();
@@ -58,8 +73,70 @@ public class DataDistributionApiException extends RuntimeException {
         }
     }
 
-    // Static factory for convenience
     public static DataDistributionApiException from(RegkeyEnum key, HttpStatus status, String innerMessage) {
         return new DataDistributionApiException(key, status, innerMessage);
     }
+
+    // ============================================================
+    // 🔥 NESTED FLOW EXCEPTIONS (ALL IN ONE CLASS)
+    // ============================================================
+
+    // 1️⃣ Creation failure
+    public static class OrganisationUnitCreationException extends DataDistributionApiException {
+        public OrganisationUnitCreationException(String msg) {
+            super(RegkeyEnum.CREATE_INVOLVED_PARTY, msg, msg);
+        }
+    }
+
+    // 2️⃣ External Identifier update failure
+    public static class ExternalIdentifierUpdateException extends DataDistributionApiException {
+        public ExternalIdentifierUpdateException(String msg, Throwable cause) {
+            super(RegkeyEnum.UPDATE_EXTERNAL_ID, msg, cause != null ? cause.getMessage() : msg);
+            initCause(cause);
+        }
+    }
+
+    // 3️⃣ Postal Address creation failure
+    public static class PostalAddressCreationException extends DataDistributionApiException {
+        public PostalAddressCreationException(String msg, Throwable cause) {
+            super(RegkeyEnum.CREATE_POSTAL_ADDRESS, msg, cause != null ? cause.getMessage() : msg);
+            initCause(cause);
+        }
+    }
+
+    // 4️⃣ Organisation hierarchy creation failure
+    public static class OrganisationHierarchyCreationException extends DataDistributionApiException {
+        public OrganisationHierarchyCreationException(String msg, Throwable cause) {
+            super(RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY, msg, cause != null ? cause.getMessage() : msg);
+            initCause(cause);
+        }
+    }
 }
+
+
+⸻
+
+✅ How to use now in your service
+
+Since these are now inner classes:
+
+import static com.ing.datadist.api.exception.DataDistributionApiException.*;
+
+throw new OrganisationUnitCreationException("Missing UUID");
+throw new ExternalIdentifierUpdateException("Failed external ID update", e);
+throw new PostalAddressCreationException("Failed postal address", e);
+throw new OrganisationHierarchyCreationException("Failed hierarchy", e);
+
+Your service will compile exactly the same.
+
+⸻
+
+🎉 All 4 exceptions → now in ONE class
+
+You didn’t lose type safety.
+You didn’t lose custom messages.
+You gained clean code and grouping.
+
+⸻
+
+If you want, I can refactor your entire OrganisationUnitService with these nested exceptions applied cleanly.

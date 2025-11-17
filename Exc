@@ -1,29 +1,60 @@
-[INFO] 4 errors
-[INFO] -------------------------------------------------------------
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  13.058 s
-[INFO] Finished at: 2025-11-17T17:14:07+05:30
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project DataDistribution: Compilation failure: Compilation failure:
-[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/exception/DataDistributionApiException.java:[71,29] cannot find symbol
-[ERROR]   symbol:   variable UPDATE_EXTERNAL_ID
-[ERROR]   location: class com.ing.datadist.api.utils.RegkeyEnum
-[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[61,31] cannot find symbol       
-[ERROR]   symbol:   variable CREATE_ORGANISATION_UNIT
-[ERROR]   location: class com.ing.datadist.api.utils.RegkeyEnum
-[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[71,31] cannot find symbol       
-[ERROR]   symbol:   variable CREATE_ORGANISATION_UNIT
-[ERROR]   location: class com.ing.datadist.api.utils.RegkeyEnum
-[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OrganisationUnitService.java:[147,31] cannot find symbol      
-[ERROR]   symbol:   variable PARALLEL_FLOW
-[ERROR]   location: class com.ing.datadist.api.utils.RegkeyEnum
-[ERROR] -> [Help 1]
-[ERROR]
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR]
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
-PS C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution> 
+    public void processOrganisationUnit(String orgNumber) {
+        InvolvedPartiesOrganisationUnitResponse response = createOrganisationUnit(orgNumber);
+        String uuid = response.getInvolvedPartyIdentifier();
+        if (uuid == null || uuid.isBlank()) {
+            log.warn("No involvedPartyIdentifier found in response");
+            return;
+        }
+        UpdateExternalIdentifierOrganisationUnitRequest updateRequest = buildUpdateRequest(orgNumber);
+
+        final String PARENT_ID = "PARENT-ID";
+        final String CHILD_ID = "CHILD-ID";
+
+        CompletableFuture<Void> updateExternalIdentifierAsync =
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        updateExternalIdentifier(uuid, updateRequest);
+                    } catch (Exception e) {
+                        throw new DataDistributionApiException(
+                                RegkeyEnum.UPDATE_EXTERNAL_IDENTIFIER,
+                                HttpStatus.BAD_REQUEST,
+                                "Failed to update external identifier for uuid=" + uuid + " : " + e.getMessage()
+                        );
+                    }
+                });
+
+        CompletableFuture<Void> createPostalAddressAsync =
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        addressService.createPostalAddress(uuid, orgNumber);
+                    } catch (Exception e) {
+                        throw new DataDistributionApiException(
+                                RegkeyEnum.CREATE_POSTAL_ADDRESS,
+                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                "Failed to create postal address for uuid=" + uuid + " : " + e.getMessage()
+                        );
+                    }
+                });
+
+        CompletableFuture<Void> createOrganisationUnitHierarchyAsync =
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        createOrganisationUnitHierarchy(CHILD_ID, PARENT_ID);
+                    } catch (Exception e) {
+                        throw new DataDistributionApiException(
+                                RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY,
+                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                "Failed to create hierarchy child=" + CHILD_ID + ", parent=" + PARENT_ID + " : " + e.getMessage()
+                        );
+                    }
+                });
+        try {
+            CompletableFuture.allOf(
+                    updateExternalIdentifierAsync,
+                    createPostalAddressAsync,
+                    createOrganisationUnitHierarchyAsync
+            ).join(); //dont want error/exception catch or throw here
+        }
+        log.info("All parallel operations completed for OU uuid={}", uuid);
+    }
+

@@ -1,0 +1,23 @@
+public class ExternalIdentifierUpdateException extends RuntimeException {
+    public ExternalIdentifierUpdateException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
+}
+
+public class PostalAddressCreationException extends RuntimeException {
+    public PostalAddressCreationException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
+}
+
+public class OrganisationHierarchyCreationException extends RuntimeException {
+    public OrganisationHierarchyCreationException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
+}
+
+public class OrganisationUnitCreationException extends RuntimeException {
+    public OrganisationUnitCreationException(String msg) {
+        super(msg);
+    }
+}

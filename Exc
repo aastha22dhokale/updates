@@ -1,142 +1,78 @@
-Great — this is very clean, and YES you can extend this single class to hold ALL 4 flow exceptions inside it.
+    public void processOrganisationUnit(String orgNumber) {
 
-You already have a base class:
+        InvolvedPartiesOrganisationUnitResponse response = createOrganisationUnit(orgNumber);
+        String uuid = response.getInvolvedPartyIdentifier();
 
-DataDistributionApiException
-
-Now we simply add nested static exception subclasses inside this SAME file.
-
-No more 4 files.
-No more multiple imports.
-All flow-level exceptions stay grouped.
-
-⸻
-
-✅ Updated DataDistributionApiException with ALL 4 flow exception types
-
-👉 Replace your file with this complete merged version:
-
-package com.ing.datadist.api.exception;
-
-import com.ing.datadist.api.utils.RegkeyEnum;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
-import java.text.MessageFormat;
-import org.springframework.http.HttpStatus;
-
-import static com.ing.datadist.api.utils.DataDistributionConstants.CLIENT_ERROR;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
-@Slf4j
-@Getter
-@ToString
-@EqualsAndHashCode(callSuper = true)
-public class DataDistributionApiException extends RuntimeException {
-
-    private static final long serialVersionUID = 1L;
-
-    private final int code;
-    private final String innerMessage;
-    private final String timeStamp;
-
-    private static final String LOG_MESSAGE = "ReqKey {0} - DataDistributionApiException message {1} - innerMessage {2}";
-    private static final String WARNING_CODE = "WarningCode";
-
-    public DataDistributionApiException(RegkeyEnum reqKeyEnum, String message, String innerMessage) {
-        this(reqKeyEnum, CLIENT_ERROR, message, innerMessage);
-    }
-
-    public DataDistributionApiException(RegkeyEnum reqKeyEnum, int code, String message, String innerMessage) {
-        super(message);
-        this.code = code;
-        this.innerMessage = innerMessage;
-        this.timeStamp = String.valueOf(System.currentTimeMillis());
-
-        if (isNotBlank(message) && isNotBlank(innerMessage)) {
-            MDC.put(WARNING_CODE, innerMessage);
-            log.error(MessageFormat.format(LOG_MESSAGE, reqKeyEnum.label, message, innerMessage));
+        if (uuid == null || uuid.isBlank()) {
+            throw new OrganisationUnitCreationException("No involvedPartyIdentifier returned for orgNumber=" + orgNumber);
         }
-    }
 
-    public DataDistributionApiException(RegkeyEnum regkeyEnum, HttpStatus httpStatus, String innerMessage) {
-        super(httpStatus.getReasonPhrase());
-        this.code = httpStatus.value();
-        this.innerMessage = innerMessage;
-        this.timeStamp = String.valueOf(System.currentTimeMillis());
+        UpdateExternalIdentifierOrganisationUnitRequest updateRequest = buildUpdateRequest(orgNumber);
 
-        if (isNotBlank(httpStatus.getReasonPhrase()) && isNotBlank(innerMessage)) {
-            MDC.put(WARNING_CODE, innerMessage);
-            log.error(MessageFormat.format(LOG_MESSAGE, regkeyEnum.label, httpStatus.getReasonPhrase(), innerMessage));
+        final String PARENT_ID = "PARENT-ID";
+        final String CHILD_ID = "CHILD-ID";
+
+        CompletableFuture<Void> updateExternalIdentifierAsync =
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        updateExternalIdentifier(uuid, updateRequest);
+                    } catch (Exception e) {
+                        throw new ExternalIdentifierUpdateException(
+                                "Failed to update external identifier for uuid=" + uuid, e
+                        );
+                    }
+                });
+
+        CompletableFuture<Void> createPostalAddressAsync =
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        addressService.createPostalAddress(uuid, orgNumber);
+                    } catch (Exception e) {
+                        throw new PostalAddressCreationException(
+                                "Failed to create postal address for uuid=" + uuid, e
+                        );
+                    }
+                });
+
+        CompletableFuture<Void> createOrganisationUnitHierarchyAsync =
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        createOrganisationUnitHierarchy(CHILD_ID, PARENT_ID);
+                    } catch (Exception e) {
+                        throw new OrganisationHierarchyCreationException(
+                                "Failed to create hierarchy child=" + CHILD_ID + ", parent=" + PARENT_ID, e
+                        );
+                    }
+                });
+
+
+        // ---------------------------
+        // WAIT FOR ALL + CAPTURE FLOW ERRORS
+        // ---------------------------
+
+        try {
+            CompletableFuture.allOf(
+                    updateExternalIdentifierAsync,
+                    createPostalAddressAsync,
+                    createOrganisationUnitHierarchyAsync
+            ).join();
+        } catch (CompletionException ce) {
+
+            // You get EXACTLY which API failed
+            Throwable cause = ce.getCause();
+
+            if (cause instanceof ExternalIdentifierUpdateException) {
+                log.error("FLOW ERROR: External Identifier update failed → {}", cause.getMessage());
+            } else if (cause instanceof PostalAddressCreationException) {
+                log.error("FLOW ERROR: Postal Address creation failed → {}", cause.getMessage());
+            } else if (cause instanceof OrganisationHierarchyCreationException) {
+                log.error("FLOW ERROR: Hierarchy creation failed → {}", cause.getMessage());
+            } else {
+                log.error("FLOW ERROR: Unexpected failure: {}", cause.getMessage());
+            }
+
+            throw ce; // rethrow if the flow must indicate failure
         }
+
+        log.info("✔ All parallel operations completed for OU uuid={}", uuid);
     }
-
-    public static DataDistributionApiException from(RegkeyEnum key, HttpStatus status, String innerMessage) {
-        return new DataDistributionApiException(key, status, innerMessage);
-    }
-
-    // ============================================================
-    // 🔥 NESTED FLOW EXCEPTIONS (ALL IN ONE CLASS)
-    // ============================================================
-
-    // 1️⃣ Creation failure
-    public static class OrganisationUnitCreationException extends DataDistributionApiException {
-        public OrganisationUnitCreationException(String msg) {
-            super(RegkeyEnum.CREATE_INVOLVED_PARTY, msg, msg);
-        }
-    }
-
-    // 2️⃣ External Identifier update failure
-    public static class ExternalIdentifierUpdateException extends DataDistributionApiException {
-        public ExternalIdentifierUpdateException(String msg, Throwable cause) {
-            super(RegkeyEnum.UPDATE_EXTERNAL_ID, msg, cause != null ? cause.getMessage() : msg);
-            initCause(cause);
-        }
-    }
-
-    // 3️⃣ Postal Address creation failure
-    public static class PostalAddressCreationException extends DataDistributionApiException {
-        public PostalAddressCreationException(String msg, Throwable cause) {
-            super(RegkeyEnum.CREATE_POSTAL_ADDRESS, msg, cause != null ? cause.getMessage() : msg);
-            initCause(cause);
-        }
-    }
-
-    // 4️⃣ Organisation hierarchy creation failure
-    public static class OrganisationHierarchyCreationException extends DataDistributionApiException {
-        public OrganisationHierarchyCreationException(String msg, Throwable cause) {
-            super(RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY, msg, cause != null ? cause.getMessage() : msg);
-            initCause(cause);
-        }
-    }
-}
-
-
-⸻
-
-✅ How to use now in your service
-
-Since these are now inner classes:
-
-import static com.ing.datadist.api.exception.DataDistributionApiException.*;
-
-throw new OrganisationUnitCreationException("Missing UUID");
-throw new ExternalIdentifierUpdateException("Failed external ID update", e);
-throw new PostalAddressCreationException("Failed postal address", e);
-throw new OrganisationHierarchyCreationException("Failed hierarchy", e);
-
-Your service will compile exactly the same.
-
-⸻
-
-🎉 All 4 exceptions → now in ONE class
-
-You didn’t lose type safety.
-You didn’t lose custom messages.
-You gained clean code and grouping.
-
-⸻
-
-If you want, I can refactor your entire OrganisationUnitService with these nested exceptions applied cleanly.

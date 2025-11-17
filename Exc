@@ -1,261 +1,65 @@
-package com.ing.datadist.api.service;
+package com.ing.datadist.api.exception;
 
-import com.ing.datadist.api.model.CreateOrganisationUnitRequest;
-import com.ing.datadist.api.model.CreateOrganisationUnitNameRequest;
-import com.ing.datadist.api.model.InvolvedPartiesOrganisationUnitResponse;
-import com.ing.datadist.api.model.UpdateExternalIdentifierOrganisationUnitRequest;
-import com.ing.datadist.api.model.OrganisationUnitOrganisationRelationshipRequest;
-import com.ing.datadist.configreader.CofaceOpsConfigReader;
-import static com.ing.datadist.api.utils.DataDistributionConstants.DATA_SOURCE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.LOGICAL_DATA_DOMAIN;
-import static com.ing.datadist.api.utils.DataDistributionConstants.LANGUAGE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.CHANNEL_OF_ENTRY;
-import static com.ing.datadist.api.utils.DataDistributionConstants.ORGANISATION_UNIT_NAME_TYPE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.STRUCTURE_TYPE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.EXTERNAL_ID_TYPE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.EXTERNAL_ID_STATUS;
-import static com.ing.datadist.api.utils.DataDistributionConstants.PLACE_OF_ISSUE;
-import static com.ing.datadist.api.utils.DataDistributionConstants.ROLE_REASON_TYPE;
-
+import com.ing.datadist.api.utils.RegkeyEnum;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.slf4j.MDC;
+import java.text.MessageFormat;
+import org.springframework.http.HttpStatus;
 
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.CompletableFuture;
+import static com.ing.datadist.api.utils.DataDistributionConstants.CLIENT_ERROR;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import com.ing.datadist.api.exception.OrganisationUnitCreationException;
-import com.ing.datadist.api.exception.ExternalIdentifierUpdateException;
-import com.ing.datadist.api.exception.PostalAddressCreationException;
-import com.ing.datadist.api.exception.OrganisationHierarchyCreationException;
-import java.util.concurrent.CompletionException;
-@Service
 @Slf4j
-public class OrganisationUnitService {
+@Getter
+@ToString
+@EqualsAndHashCode(callSuper = true)
+public class DataDistributionApiException extends RuntimeException {
 
-    private final OnePamRepository onePamRepository;
-    private final CofaceOpsConfigReader configReader;
-    private final AddressService addressService;
+    private static final long serialVersionUID = 1L;
 
-    public OrganisationUnitService(OnePamRepository onePamRepository, CofaceOpsConfigReader configReader, AddressService addressService) {
-        this.onePamRepository = onePamRepository;
-        this.configReader = configReader;
-        this.addressService = addressService;
+    private final int code;
+    private final String innerMessage;
+    private final String timeStamp;
+
+    private static final String LOG_MESSAGE = "ReqKey {0} - DataDistributionApiException message {1} - innerMessage {2}";
+    private static final String WARNING_CODE = "WarningCode";
+
+    // Constructor with RegkeyEnum and innerMessage
+    public DataDistributionApiException(RegkeyEnum reqKeyEnum, String message, String innerMessage) {
+        this(reqKeyEnum, CLIENT_ERROR, message, innerMessage);
     }
 
-    public void processOrganisationUnit(String orgNumber) {
+    // Constructor with RegkeyEnum and custom code
+    public DataDistributionApiException(RegkeyEnum reqKeyEnum, int code, String message, String innerMessage) {
+        super(message);
+        this.code = code;
+        this.innerMessage = innerMessage;
+        this.timeStamp = String.valueOf(System.currentTimeMillis());
 
-        InvolvedPartiesOrganisationUnitResponse response = createOrganisationUnit(orgNumber);
-        String uuid = response.getInvolvedPartyIdentifier();
-
-        if (uuid == null || uuid.isBlank()) {
-            throw new OrganisationUnitCreationException("No involvedPartyIdentifier returned for orgNumber=" + orgNumber);
-        }
-
-        UpdateExternalIdentifierOrganisationUnitRequest updateRequest = buildUpdateRequest(orgNumber);
-
-        // ---------------------------
-        // CONSTANTS (Hard-coded)
-        // ---------------------------
-        final String PARENT_ID = "PARENT-ID";
-        final String CHILD_ID = "CHILD-ID";
-
-        // ---------------------------
-        // PARALLEL CALLS WITH FLOW-AWARE ERROR HANDLING
-        // ---------------------------
-
-        CompletableFuture<Void> updateExternalIdentifierAsync =
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        updateExternalIdentifier(uuid, updateRequest);
-                    } catch (Exception e) {
-                        throw new ExternalIdentifierUpdateException(
-                                "Failed to update external identifier for uuid=" + uuid, e
-                        );
-                    }
-                });
-
-        CompletableFuture<Void> createPostalAddressAsync =
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        addressService.createPostalAddress(uuid, orgNumber);
-                    } catch (Exception e) {
-                        throw new PostalAddressCreationException(
-                                "Failed to create postal address for uuid=" + uuid, e
-                        );
-                    }
-                });
-
-        CompletableFuture<Void> createOrganisationUnitHierarchyAsync =
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        createOrganisationUnitHierarchy(CHILD_ID, PARENT_ID);
-                    } catch (Exception e) {
-                        throw new OrganisationHierarchyCreationException(
-                                "Failed to create hierarchy child=" + CHILD_ID + ", parent=" + PARENT_ID, e
-                        );
-                    }
-                });
-
-
-        // ---------------------------
-        // WAIT FOR ALL + CAPTURE FLOW ERRORS
-        // ---------------------------
-
-        try {
-            CompletableFuture.allOf(
-                    updateExternalIdentifierAsync,
-                    createPostalAddressAsync,
-                    createOrganisationUnitHierarchyAsync
-            ).join();
-        } catch (CompletionException ce) {
-
-            // You get EXACTLY which API failed
-            Throwable cause = ce.getCause();
-
-            if (cause instanceof ExternalIdentifierUpdateException) {
-                log.error("FLOW ERROR: External Identifier update failed → {}", cause.getMessage());
-            } else if (cause instanceof PostalAddressCreationException) {
-                log.error("FLOW ERROR: Postal Address creation failed → {}", cause.getMessage());
-            } else if (cause instanceof OrganisationHierarchyCreationException) {
-                log.error("FLOW ERROR: Hierarchy creation failed → {}", cause.getMessage());
-            } else {
-                log.error("FLOW ERROR: Unexpected failure: {}", cause.getMessage());
-            }
-
-            throw ce; // rethrow if the flow must indicate failure
-        }
-
-        log.info("✔ All parallel operations completed for OU uuid={}", uuid);
-    }
-
-
-private InvolvedPartiesOrganisationUnitResponse createOrganisationUnit(String orgNumber) {
-        List<Map<String, String>> configs = configReader.fetchByOrgNumber(orgNumber);
-        Map<String, String> config = configs.isEmpty() ? Collections.emptyMap() : configs.get(0);
-
-        String orgUnitName = config.get("organisationUnitName");
-        String countryOfResidence = config.get("countryOfResidence");
-        String effectiveDate = config.get("dateOfIssue");
-
-        if (orgUnitName == null || orgNumber == null || countryOfResidence == null || effectiveDate == null) {
-            log.warn("Missing config values for organisation unit: {}", orgNumber);
-            throw new RuntimeException("Missing config for organisation unit");
-        }
-
-        CreateOrganisationUnitRequest request = CreateOrganisationUnitRequest.builder()
-                .dataSource(DATA_SOURCE)
-                .logicalDataDomain(LOGICAL_DATA_DOMAIN)
-                .countryOfResidence(countryOfResidence)
-                .preferredLanguage(LANGUAGE)
-                .channelOfEntry(CHANNEL_OF_ENTRY)
-                .organisationUnitStructureType(STRUCTURE_TYPE)
-                .effectiveDate(effectiveDate)
-                .organisationUnitNames(Collections.singletonList(
-                        CreateOrganisationUnitNameRequest.builder()
-                                .organisationUnitNameType(ORGANISATION_UNIT_NAME_TYPE)
-                                .organisationUnitName(orgUnitName)
-                                .build()))
-                .build();
-
-        try {
-            return onePamRepository.createInvolvedParty(request).get();
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Failed to create organisation unit", e);
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Creation failed", e);
+        if (isNotBlank(message) && isNotBlank(innerMessage)) {
+            MDC.put(WARNING_CODE, innerMessage);
+            log.error(MessageFormat.format(LOG_MESSAGE, reqKeyEnum.label, message, innerMessage));
         }
     }
 
-    private UpdateExternalIdentifierOrganisationUnitRequest buildUpdateRequest(String orgNumber) {
-        List<Map<String, String>> configs = configReader.fetchByOrgNumber(orgNumber);
-        Map<String, String> config = configs.isEmpty() ? Collections.emptyMap() : configs.get(0);
+    // Constructor using HttpStatus
+    public DataDistributionApiException(RegkeyEnum regkeyEnum, HttpStatus httpStatus, String innerMessage) {
+        super(httpStatus.getReasonPhrase());
+        this.code = httpStatus.value();
+        this.innerMessage = innerMessage;
+        this.timeStamp = String.valueOf(System.currentTimeMillis());
 
-        String uuid = config.get("uuid");
-        String countryOfIssue = config.get("countryOfResidence");
-        String dateOfIssue = config.get("dateOfIssue");
-        String expiryDate = config.get("expiryDate");
-
-        if (uuid == null || countryOfIssue == null || dateOfIssue == null || expiryDate == null) {
-            log.warn("Missing config values for external identifier update: {}", orgNumber);
-            throw new RuntimeException("Missing config for external identifier update");
-        }
-
-        return UpdateExternalIdentifierOrganisationUnitRequest.builder()
-                .involvedPartyExternalIdentifierType(EXTERNAL_ID_TYPE)
-                .involvedPartyExternalIdentifierValue(uuid)
-                .involvedPartyExternalIdentifierStatusType(EXTERNAL_ID_STATUS)
-                .countryOfIssue(countryOfIssue)
-                .placeOfIssue(PLACE_OF_ISSUE)
-                .dateOfIssue(dateOfIssue)
-                .expiryDate(expiryDate)
-                .dataSource(DATA_SOURCE)
-                .effectiveDate(dateOfIssue)
-                .endDate(ZonedDateTime.now().plusYears(10).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-                .build();
-    }
-
-    private void updateExternalIdentifier(String uuid, UpdateExternalIdentifierOrganisationUnitRequest request) {
-        try {
-            onePamRepository.updateExternalIdentifier(uuid, request).get();
-            log.info("Successfully updated external identifier for UUID: {}", uuid);
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Failed to update external identifier", e);
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Update failed", e);
+        if (isNotBlank(httpStatus.getReasonPhrase()) && isNotBlank(innerMessage)) {
+            MDC.put(WARNING_CODE, innerMessage);
+            log.error(MessageFormat.format(LOG_MESSAGE, regkeyEnum.label, httpStatus.getReasonPhrase(), innerMessage));
         }
     }
 
-    private void createOrganisationUnitHierarchy(String childId, String parentId) {
-        OrganisationUnitOrganisationRelationshipRequest request = OrganisationUnitOrganisationRelationshipRequest.builder()
-                .childOrganisationUnitIdentifier(childId)
-                .parentOrganisationIdentifier(parentId)
-                .parentRoleReasonType(ROLE_REASON_TYPE)
-                .dataSource(DATA_SOURCE)
-                .build();
-
-        try {
-            onePamRepository.createOrganisationUnitHierarchy(request).get();
-            log.info("Successfully created hierarchy between child: {} and parent: {}", childId, parentId);
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Failed to create organisation unit hierarchy", e);
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Hierarchy creation failed", e);
-        }
-    }
-}
-
-package com.ing.datadist.api.exception;
-
-public class ExternalIdentifierUpdateException extends RuntimeException {
-    public ExternalIdentifierUpdateException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
-}
-
-package com.ing.datadist.api.exception;
-
-public class OrganisationHierarchyCreationException extends RuntimeException {
-    public OrganisationHierarchyCreationException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
-}
-
-package com.ing.datadist.api.exception;
-
-public class OrganisationUnitCreationException extends RuntimeException {
-    public OrganisationUnitCreationException(String msg) {
-        super(msg);
-    }
-}
-package com.ing.datadist.api.exception;
-
-public class PostalAddressCreationException extends RuntimeException {
-    public PostalAddressCreationException(String msg, Throwable cause) {
-        super(msg, cause);
+    // Static factory for convenience
+    public static DataDistributionApiException from(RegkeyEnum key, HttpStatus status, String innerMessage) {
+        return new DataDistributionApiException(key, status, innerMessage);
     }
 }

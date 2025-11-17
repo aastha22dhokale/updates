@@ -1,78 +1,111 @@
-    public void processOrganisationUnit(String orgNumber) {
+public void processOrganisationUnit(String orgNumber) {
 
-        InvolvedPartiesOrganisationUnitResponse response = createOrganisationUnit(orgNumber);
-        String uuid = response.getInvolvedPartyIdentifier();
+    InvolvedPartiesOrganisationUnitResponse response;
 
-        if (uuid == null || uuid.isBlank()) {
-            throw new OrganisationUnitCreationException("No involvedPartyIdentifier returned for orgNumber=" + orgNumber);
-        }
-
-        UpdateExternalIdentifierOrganisationUnitRequest updateRequest = buildUpdateRequest(orgNumber);
-
-        final String PARENT_ID = "PARENT-ID";
-        final String CHILD_ID = "CHILD-ID";
-
-        CompletableFuture<Void> updateExternalIdentifierAsync =
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        updateExternalIdentifier(uuid, updateRequest);
-                    } catch (Exception e) {
-                        throw new ExternalIdentifierUpdateException(
-                                "Failed to update external identifier for uuid=" + uuid, e
-                        );
-                    }
-                });
-
-        CompletableFuture<Void> createPostalAddressAsync =
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        addressService.createPostalAddress(uuid, orgNumber);
-                    } catch (Exception e) {
-                        throw new PostalAddressCreationException(
-                                "Failed to create postal address for uuid=" + uuid, e
-                        );
-                    }
-                });
-
-        CompletableFuture<Void> createOrganisationUnitHierarchyAsync =
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        createOrganisationUnitHierarchy(CHILD_ID, PARENT_ID);
-                    } catch (Exception e) {
-                        throw new OrganisationHierarchyCreationException(
-                                "Failed to create hierarchy child=" + CHILD_ID + ", parent=" + PARENT_ID, e
-                        );
-                    }
-                });
-
-
-        // ---------------------------
-        // WAIT FOR ALL + CAPTURE FLOW ERRORS
-        // ---------------------------
-
-        try {
-            CompletableFuture.allOf(
-                    updateExternalIdentifierAsync,
-                    createPostalAddressAsync,
-                    createOrganisationUnitHierarchyAsync
-            ).join();
-        } catch (CompletionException ce) {
-
-            // You get EXACTLY which API failed
-            Throwable cause = ce.getCause();
-
-            if (cause instanceof ExternalIdentifierUpdateException) {
-                log.error("FLOW ERROR: External Identifier update failed → {}", cause.getMessage());
-            } else if (cause instanceof PostalAddressCreationException) {
-                log.error("FLOW ERROR: Postal Address creation failed → {}", cause.getMessage());
-            } else if (cause instanceof OrganisationHierarchyCreationException) {
-                log.error("FLOW ERROR: Hierarchy creation failed → {}", cause.getMessage());
-            } else {
-                log.error("FLOW ERROR: Unexpected failure: {}", cause.getMessage());
-            }
-
-            throw ce; // rethrow if the flow must indicate failure
-        }
-
-        log.info("✔ All parallel operations completed for OU uuid={}", uuid);
+    try {
+        response = createOrganisationUnit(orgNumber);
+    } catch (Exception e) {
+        throw new DataDistributionApiException(
+                RegkeyEnum.CREATE_ORGANISATION_UNIT,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Failed to create Organisation Unit for orgNumber=" + orgNumber + " : " + e.getMessage()
+        );
     }
+
+    String uuid = response.getInvolvedPartyIdentifier();
+
+    if (uuid == null || uuid.isBlank()) {
+        throw new DataDistributionApiException(
+                RegkeyEnum.CREATE_ORGANISATION_UNIT,
+                HttpStatus.NOT_FOUND,
+                "No involvedPartyIdentifier returned for orgNumber=" + orgNumber
+        );
+    }
+
+    UpdateExternalIdentifierOrganisationUnitRequest updateRequest = buildUpdateRequest(orgNumber);
+
+    final String PARENT_ID = "PARENT-ID";
+    final String CHILD_ID = "CHILD-ID";
+
+    // ------------------------------------------------
+    // PARALLEL API CALLS, EACH WITH FLOW-SPECIFIC EXCEPTION
+    // ------------------------------------------------
+
+    CompletableFuture<Void> updateExternalIdentifierAsync =
+            CompletableFuture.runAsync(() -> {
+                try {
+                    updateExternalIdentifier(uuid, updateRequest);
+                } catch (Exception e) {
+                    throw new DataDistributionApiException(
+                            RegkeyEnum.UPDATE_EXTERNAL_IDENTIFIER,
+                            HttpStatus.BAD_REQUEST,
+                            "Failed to update external identifier for uuid=" + uuid + " : " + e.getMessage()
+                    );
+                }
+            });
+
+    CompletableFuture<Void> createPostalAddressAsync =
+            CompletableFuture.runAsync(() -> {
+                try {
+                    addressService.createPostalAddress(uuid, orgNumber);
+                } catch (Exception e) {
+                    throw new DataDistributionApiException(
+                            RegkeyEnum.CREATE_POSTAL_ADDRESS,
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Failed to create postal address for uuid=" + uuid + " : " + e.getMessage()
+                    );
+                }
+            });
+
+    CompletableFuture<Void> createOrganisationUnitHierarchyAsync =
+            CompletableFuture.runAsync(() -> {
+                try {
+                    createOrganisationUnitHierarchy(CHILD_ID, PARENT_ID);
+                } catch (Exception e) {
+                    throw new DataDistributionApiException(
+                            RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY,
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Failed to create hierarchy child=" + CHILD_ID + ", parent=" + PARENT_ID + " : " + e.getMessage()
+                    );
+                }
+            });
+
+    // ------------------------------------------------
+    // WAIT FOR ALL — CATCH FLOW EXCEPTIONS
+    // ------------------------------------------------
+
+    try {
+        CompletableFuture.allOf(
+                updateExternalIdentifierAsync,
+                createPostalAddressAsync,
+                createOrganisationUnitHierarchyAsync
+        ).join();
+
+    } catch (CompletionException ce) {
+
+        Throwable cause = ce.getCause();
+
+        if (cause instanceof DataDistributionApiException) {
+
+            DataDistributionApiException ex = (DataDistributionApiException) cause;
+
+            log.error("FLOW ERROR → API={} | Code={} | Message={} | Inner={}",
+                    ex.getMessage(),
+                    ex.getCode(),
+                    ex.getMessage(),
+                    ex.getInnerMessage()
+            );
+
+            throw ex;   // rethrow the flow-specific exception
+        }
+
+        log.error("FLOW ERROR: Unexpected failure: {}", cause.getMessage());
+        throw new DataDistributionApiException(
+                RegkeyEnum.PARALLEL_FLOW,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Unexpected failure in parallel processing: " + cause.getMessage()
+        );
+    }
+
+    log.info("✔ All parallel operations completed for OU uuid={}", uuid);
+}

@@ -1,5 +1,194 @@
+Nice — I built everything you asked for: all model classes, the repository method, the service method, and a simple controller endpoint — all matching the style and patterns already used in your project.
+
+I made conservative, sensible choices for the request/response fields based on the OnePAM API you shared and your existing PostalAddressResponse model. If you prefer different field names or additional fields, tell me and I’ll adjust.
+
+Below are the new/updated files. Paste them into your project in the same packages you showed.
+
+⸻
+
+1) Model — UpdatePostalAddressV5Request.java
+
+Create this in com.ing.datadist.api.model.
+
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UpdatePostalAddressV5Request {
+
+    /**
+     * Usage type used in the path variable: e.g. "PRIMARY", "CORRESPONDENCE", etc.
+     * Not strictly required in the body but often useful to carry.
+     */
+    @JsonProperty("postalAddressUsageType")
+    private String postalAddressUsageType;
+
+    @JsonProperty("countryCode")
+    private String countryCode;
+
+    @JsonProperty("countryRegionCode")
+    private String countryRegionCode;
+
+    @JsonProperty("districtName")
+    private String districtName;
+
+    @JsonProperty("cityName")
+    private String cityName;
+
+    @JsonProperty("cityAreaName")
+    private String cityAreaName;
+
+    @JsonProperty("regionName")
+    private String regionName;
+
+    @JsonProperty("postalCode")
+    private String postalCode;
+
+    @JsonProperty("streetName")
+    private String streetName;
+
+    @JsonProperty("streetType")
+    private String streetType;
+
+    @JsonProperty("houseNumber")
+    private String houseNumber;
+
+    @JsonProperty("houseNumberAddition")
+    private String houseNumberAddition;
+
+    @JsonProperty("buildingName")
+    private String buildingName;
+
+    @JsonProperty("deliveryInformation")
+    private String deliveryInformation;
+
+    @JsonProperty("floor")
+    private String floor;
+
+    @JsonProperty("locationUnitNumber")
+    private String locationUnitNumber;
+
+    @JsonProperty("departmentName")
+    private String departmentName;
+
+    @JsonProperty("subdepartmentName")
+    private String subdepartmentName;
+
+    @JsonProperty("poBoxNumber")
+    private String poBoxNumber;
+
+    @JsonProperty("unstructuredAddressLine1")
+    private String unstructuredAddressLine1;
+
+    @JsonProperty("unstructuredAddressLine2")
+    private String unstructuredAddressLine2;
+
+    @JsonProperty("unstructuredAddressLine3")
+    private String unstructuredAddressLine3;
+
+    @JsonProperty("effectiveDate")
+    private String effectiveDate;
+
+    @JsonProperty("endDate")
+    private String endDate;
+
+    @JsonProperty("dataSource")
+    private String dataSource;
+}
+
+
+⸻
+
+2) Model — UpdatePostalAddressV5Response.java
+
+Create this in com.ing.datadist.api.model.
+
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UpdatePostalAddressV5Response {
+
+    /**
+     * The API typically returns the created/updated postal address structure.
+     * Re-using your existing PostalAddressResponse model.
+     */
+    @JsonProperty("postalAddress")
+    private PostalAddressResponse postalAddress;
+
+    @JsonProperty("_links")
+    private InvolvedPartiesLinkSelfResponse links;
+}
+
+
+⸻
+
+3) Repository — OnePamRepository.java (new method)
+
+Add this method into your existing OnePamRepository class (package com.ing.datadist.api.service). Place it near the other update methods (e.g., with updateOrganisationUnitName and createPostalAddress).
+
+public CompletableFuture<UpdatePostalAddressV5Response> updatePostalAddress(
+        UpdatePostalAddressV5Request payload, String uuid, String postalAddressUsageType) {
+    try {
+        String url = RegkeyEnum.UPDATE_POSTAL_ADDRESS.resolveEndpoint(uuid, postalAddressUsageType);
+        Request request = new RichHttpRequestBuilder()
+                .withUrl(url)
+                .withMethod(Method.Patch)
+                .withJsonContent(payload)
+                .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
+                .build();
+
+        return apiClient.apply(request)
+                .thenApply(response -> {
+                    try {
+                        return objectMapper.readValue(response.contentString(), UpdatePostalAddressV5Response.class);
+                    } catch (Exception e) {
+                        throw new DataDistributionApiException(
+                                RegkeyEnum.UPDATE_POSTAL_ADDRESS,
+                                "Failed to parse response from updatePostalAddress API",
+                                e.getMessage()
+                        );
+                    }
+                });
+
+    } catch (RichHttpRequestBuilderException e) {
+        throw new DataDistributionApiException(
+                RegkeyEnum.UPDATE_POSTAL_ADDRESS,
+                "Failed to build request for updatePostalAddress API",
+                e.getMessage()
+        );
+    }
+}
+
+Notes:
+	•	Uses same header "X-ING-LastUpdateUser" as your other update methods.
+	•	Uses RegkeyEnum.UPDATE_POSTAL_ADDRESS and resolveEndpoint(uuid, postalAddressUsageType) per your RegkeyEnum.
+	•	Returns UpdatePostalAddressV5Response for consistency with other V5 responses.
+
+⸻
+
+4) Service — UpdateOrganisationUnitService.java (add method + inject repository)
+
+Update your service to call the repository. I added a small method updatePostalAddress returning UpdatePostalAddressV5Response synchronously (blocking .get()) to keep behavior consistent with other blocking flows like closeOrganisationHierarchyRelationship().
+
+Replace the existing UpdateOrganisationUnitService with this (or merge accordingly):
+
 package com.ing.datadist.api.service;
 
+import com.ing.datadist.api.model.UpdatePostalAddressV5Request;
+import com.ing.datadist.api.model.UpdatePostalAddressV5Response;
 import com.ing.datadist.api.model.*;
 import com.ing.datadist.domain.OrganisationUnitDomainWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -7,16 +196,24 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 @Slf4j
 public class UpdateOrganisationUnitService {
 
-    public void updateOrganisationUnit(OrganisationUnitDomainWrapper wrapper, SearchInvolvedPartiesResponseV1 response) throws Exception {
+    private final OnePamRepository onePamRepository;
 
+    @Autowired
+    public UpdateOrganisationUnitService(OnePamRepository onePamRepository) {
+        this.onePamRepository = onePamRepository;
+    }
+
+    public void updateOrganisationUnit(OrganisationUnitDomainWrapper wrapper, SearchInvolvedPartiesResponseV1 response) throws Exception {
         String uuid = wrapper.getOpsUUID();
         List<SearchOrganisationUnitResponseV1> organisationUnits = response.getOrganisationUnits();
-
 
         for (SearchOrganisationUnitResponseV1 organisationUnit : organisationUnits) {
             List<SearchOrganisationUnitNameResponseV1> organisationUnitNames = organisationUnit.getOrganisationUnitNames();
@@ -81,4 +278,100 @@ public class UpdateOrganisationUnitService {
 
         }
     }
+
+    /**
+     * Calls OnePAM repository to update postal address.
+     * Blocks on completion (consistent with other blocking usages in repo/service).
+     */
+    public UpdatePostalAddressV5Response updatePostalAddress(
+            UpdatePostalAddressV5Request request, String uuid, String postalAddressUsageType) {
+        try {
+            CompletableFuture<UpdatePostalAddressV5Response> future = onePamRepository.updatePostalAddress(request, uuid, postalAddressUsageType);
+            // block similarly to other synchronous patterns used elsewhere in project
+            return future.get();
+        } catch (Exception e) {
+            log.error("Exception while updating postal address for uuid={}, usageType={}", uuid, postalAddressUsageType, e);
+            throw new RuntimeException("Failed to update postal address", e);
+        }
+    }
 }
+
+
+⸻
+
+5) Controller — OrganisationUnitController.java
+
+Add this controller class (package com.ing.datadist.api or com.ing.datadist.api.controller if you have that package). It follows your API path exactly:
+
+PATCH /v5/involved-parties/{uuid}/postal-addresses/{postalAddressUsageType}
+
+package com.ing.datadist.api;
+
+import com.ing.datadist.api.model.UpdatePostalAddressV5Request;
+import com.ing.datadist.api.model.UpdatePostalAddressV5Response;
+import com.ing.datadist.api.service.UpdateOrganisationUnitService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Controller exposing update endpoints for organisation unit resources.
+ */
+@RestController
+@Slf4j
+public class OrganisationUnitController {
+
+    private final UpdateOrganisationUnitService updateOrganisationUnitService;
+
+    @Autowired
+    public OrganisationUnitController(UpdateOrganisationUnitService updateOrganisationUnitService) {
+        this.updateOrganisationUnitService = updateOrganisationUnitService;
+    }
+
+    @PatchMapping(path = "/v5/involved-parties/{uuid}/postal-addresses/{postalAddressUsageType}")
+    public ResponseEntity<UpdatePostalAddressV5Response> updatePostalAddress(
+            @PathVariable("uuid") String uuid,
+            @PathVariable("postalAddressUsageType") String postalAddressUsageType,
+            @RequestHeader(value = "X-ING-LastUpdateUser", required = false) String lastUpdateUser,
+            @RequestBody UpdatePostalAddressV5Request request) {
+
+        log.info("Received request to update postal address: uuid={}, usageType={}, lastUpdateUser={}", uuid, postalAddressUsageType, lastUpdateUser);
+        // Optionally you can set lastUpdateUser into the request if you want it stored in the payload
+        UpdatePostalAddressV5Response response = updateOrganisationUnitService.updatePostalAddress(request, uuid, postalAddressUsageType);
+        return ResponseEntity.ok(response);
+    }
+}
+
+Notes:
+	•	This controller is minimal and follows your existing patterns. If you already have a controller where updateOrganisationUnitName sits, you can instead merge this endpoint there.
+
+⸻
+
+6) RegkeyEnum — confirm entry
+
+You already have this entry (I copied it earlier). Make sure it is exactly:
+
+UPDATE_POSTAL_ADDRESS("UPDATE_POSTAL_ADDRESS", HttpMethod.PATCH, "https://api.ing.com/v5/involved-parties/{uuid}/postal-addresses/{postalAddressUsageType}")
+
+If your RegkeyEnum currently uses uppercase/lowercase or missing commas, correct it to match the format in your project. (You earlier posted it — looks OK, but double-check there is a comma between enum entries.)
+
+⸻
+
+Quick checklist before compile
+	1.	Add the two model files to com.ing.datadist.api.model.
+	2.	Insert repository method into OnePamRepository (same file you already have).
+	3.	Replace or merge UpdateOrganisationUnitService with the updated version (so OnePamRepository is injected).
+	4.	Add OrganisationUnitController (or add endpoint to existing controller).
+	5.	Ensure imports are correct (I used @Generated, lombok annotations, Jackson annotations).
+	6.	If you prefer non-blocking controllers, we can return CompletableFuture directly — tell me.
+
+⸻
+
+Done — or want the digital address method next?
+
+I implemented the full postal-address flow. If you want the update digital address flow next, I’ll produce the same set (request/response model, repository method, service call, controller endpoint).
+
+Also tell me if you want the controller to return CompletableFuture (non-blocking) instead of blocking .get() in the service.
+
+If you want, I can also produce unit test skeletons for the new repository and service methods.

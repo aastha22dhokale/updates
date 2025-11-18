@@ -1,22 +1,115 @@
+PS C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution> mvn clean install     
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.ing.dd:DataDistribution:jar:1.0.0
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.projectlombok:lombok:jar -> version ${lombok.version} vs (?) @ com.ing.dd:DataDistribution:${revision}, C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\pom.xml, line 68, column 21
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.projectlombok:lombok:jar -> duplicate declaration of version ${lombok.version} @ com.ing.dd:DataDistribution:${revision}, C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\pom.xml, line 141, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ com.ing.dd:DataDistribution:${revision}, C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\pom.xml, line 215, column 21
+[WARNING]
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING]
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING]
+[INFO] 
+[INFO] --------------------< com.ing.dd:DataDistribution >---------------------
+[INFO] Building DataDistribution 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ DataDistribution ---
+[INFO] Deleting C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\target
+[INFO] 
+[INFO] --- enforcer:3.5.0:enforce (enforce-maven-version-and-dependencies) @ DataDistribution ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireMavenVersion passed
+[INFO] Rule 1: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] Rule 2: org.apache.maven.enforcer.rules.dependency.DependencyConvergence passed
+[INFO]
+[INFO] --- avro:1.11.0:schema (default) @ DataDistribution ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ DataDistribution ---
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] Copying 11 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ DataDistribution ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 167 source files with javac [debug parameters release 21] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/configreader/CofaceOpsConfigReader.java: Some input files use or override a deprecated API.
+[INFO] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/configreader/CofaceOpsConfigReader.java: Recompile with -Xlint:deprecation for details.
+[INFO]
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ DataDistribution ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO]
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ DataDistribution ---
+[INFO] No sources to compile
+[INFO]
+[INFO] --- surefire:3.0.0:test (default-test) @ DataDistribution ---
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ DataDistribution ---
+[INFO] Building jar: C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\target\DataDistribution-1.0.0.jar
+[INFO] 
+[INFO] --- cyclonedx:2.9.1:makeAggregateBom (default) @ DataDistribution ---
+[INFO] CycloneDX: Resolving Dependencies
+[INFO] CycloneDX: Creating BOM version 1.6 with 339 component(s)
+[INFO] CycloneDX: Writing and validating BOM (JSON): C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\target\classes\META-INF\sbom\application.cdx.json
+[WARNING] Unknown keyword meta:enum - you should define your own Meta Schema. If the keyword is irrelevant for validation, just use a NonValidationKeyword or if it should generate annotations AnnotationKeyword
+[WARNING] Unknown keyword deprecated - you should define your own Meta Schema. If the keyword is irrelevant for validation, just use a NonValidationKeyword or if it should generate annotations AnnotationKeyword
+[INFO]            attaching as DataDistribution-1.0.0-cyclonedx.json
+[INFO]
+[INFO] --- spring-boot:2.3.2.RELEASE:repackage (repackage) @ DataDistribution ---
+[INFO] Layout: ZIP
+[INFO] Replacing main artifact with repackaged archive
+[INFO]
+[INFO] --- spring-boot:2.3.2.RELEASE:repackage (default) @ DataDistribution ---
+[INFO] Layout: ZIP
+[INFO] Replacing main artifact with repackaged archive
+[INFO]
+[INFO] --- install:3.1.4:install (default-install) @ DataDistribution ---
+[INFO] Installing C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\pom.xml to C:\Users\UU47VT\.m2\repository\com\ing\dd\DataDistribution\1.0.0\DataDistribution-1.0.0.pom
+[INFO] Installing C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\target\DataDistribution-1.0.0.jar to C:\Users\UU47VT\.m2\repository\com\ing\dd\DataDistribution\1.0.0\DataDistribution-1.0.0.jar
+[INFO] Installing C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\target\classes\META-INF\sbom\application.cdx.json to C:\Users\UU47VT\.m2\repository\com\ing\dd\DataDistribution\1.0.0\DataDistribution-1.0.0-cyclonedx.json
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  31.053 s
+[INFO] Finished at: 2025-11-18T20:00:11+05:30
+[INFO] ------------------------------------------------------------------------
+PS C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution> mvn spring-boot:run -Dspring.batch.job.enabled=false
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.ing.dd:DataDistribution:jar:1.0.0
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.projectlombok:lombok:jar -> version ${lombok.version} vs (?) @ com.ing.dd:DataDistribution:${revision}, C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\pom.xml, line 68, column 21
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.projectlombok:lombok:jar -> duplicate declaration of version ${lombok.version} @ com.ing.dd:DataDistribution:${revision}, C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\pom.xml, line 141, column 21
+[WARNING] 'build.plugins.plugin.(groupId:artifactId)' must be unique but found duplicate declaration of plugin org.apache.maven.plugins:maven-surefire-plugin @ com.ing.dd:DataDistribution:${revision}, C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\pom.xml, line 215, column 21
+[WARNING]
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING]
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING]
+[INFO] 
+[INFO] --------------------< com.ing.dd:DataDistribution >---------------------
+[INFO] Building DataDistribution 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  25.780 s
-[INFO] Finished at: 2025-11-18T19:58:23+05:30
+[INFO] Total time:  0.835 s
+[INFO] Finished at: 2025-11-18T20:00:48+05:30
 [INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:2.3.2.RELEASE:run (default-cli) on project DataDistribution: An exception occurred while running. n
-ull: InvocationTargetException: Error creating bean with name 'addressService' defined in file [C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\target\classes\com
-\ing\datadist\api\service\AddressService.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'cofaceOpsConfigReader' defined in 
-file [C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution\target\classes\com\ing\datadist\configreader\CofaceOpsConfigReader.class]: Unsatisfied dependency expressed 
-through constructor parameter 0: Error creating bean with name 'batchDataSourceInitializer' defined in class path resource [org/springframework/boot/autoconfigure/batch/BatchAutoCo
-nfiguration$DataSourceInitializerConfiguration.class]: Failed to instantiate [org.springframework.boot.autoconfigure.batch.BatchDataSourceScriptDatabaseInitializer]: Factory method
- 'batchDataSourceInitializer' threw exception with message: Failed to determine DatabaseDriver: Could not get Connection for extracting meta-data: Failed to obtain JDBC Connection: ORA-12541: Cannot connect. No listener at host localhost port 1521. (CONNECTION_ID=PO1erIvWSR+1/toRyGGKlA==)
-[ERROR] https://docs.oracle.com/error-help/db/ora-12541/: Connection refused: getsockopt
-[ERROR] -> [Help 1]
+[ERROR] Unknown lifecycle phase ".batch.job.enabled=false". You must specify a valid lifecycle phase or a goal in the format <plugin-prefix>:<goal> or <plugin-group-id>:<plugin-art
+ifact-id>[:<plugin-version>]:<goal>. Available lifecycle phases are: pre-clean, clean, post-clean, validate, initialize, generate-sources, process-sources, generate-resources, proc
+ess-resources, compile, process-classes, generate-test-sources, process-test-sources, generate-test-resources, process-test-resources, test-compile, process-test-classes, test, prepare-package, package, pre-integration-test, integration-test, post-integration-test, verify, install, deploy, pre-site, site, post-site, site-deploy. -> [Help 1]
 [ERROR]
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
 [ERROR] Re-run Maven using the -X switch to enable full debug logging.
 [ERROR]
 [ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/LifecyclePhaseNotFoundException
 PS C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution> 

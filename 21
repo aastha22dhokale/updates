@@ -1,207 +1,160 @@
-package com.ing.datadist.api.utils;
 
+P33558-DataDistributorAPI
+backup
+DataDistribution
+src
+main
+java
+com
+ing
+datadist
+api
 
-import jakarta.ws.rs.HttpMethod;
-import lombok.Generated;
+config
+InvolvedPartyApiProperties.java
 
-import static org.apache.commons.lang3.StringUtils.SPACE;
+exception
+DataDistributionApiException.java
 
-@Generated
-public enum RegkeyEnum {
-    // ✅ OnePam endpoints
-    CREATE_INVOLVED_PARTY("CREATE_INVOLVED_PARTY", HttpMethod.POST, "https://api.ing.com/v5/involved-parties"),
-    UPDATE_EXTERNAL_IDENTIFIER("UPDATE_EXTERNAL_IDENTIFIER", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/external-identifiers"),
-    CREATE_ORGANISATION_UNIT_HIERARCHY("CREATE_ORGANISATION_UNIT_HIERARCHY", HttpMethod.POST, "https://api.ing.com/v1/organisation-hierarchies/relationship"),
-    SEARCH_ORGANISATION_UNIT("SEARCH_ORGANISATION_UNIT", HttpMethod.POST, "https://api.ing.com/v2/partyandagreementsearch/involved-parties/organisation-units/search"),
-    UPDATE_INVOLVED_PARTY("UPDATE_INVOLVED_PARTY", HttpMethod.PATCH, "https://api.ing.com/v5/involved-parties/{uuid}"),
-    CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP("CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP", HttpMethod.POST, "https://api.ing.com/v1/organisation-hierarchies/relationship/{uuid}/close"),
-    UPDATE_ORGANISATION_UNIT_NAME("UPDATE_ORGANISATION_UNIT_NAME", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/organisation-unit-names "),
-    CREATE_POSTAL_ADDRESS("CREATE_POSTAL_ADDRESS", HttpMethod.POST, "https://api.ing.com/v5/involved-parties/{uuid}/postal-addresses");
-    UPDATE_POSTAL_ADDRESS("UPDATE_POSTAL_ADDRESS", HttpMethod.PATCH, "https://api.ing.com/v5/involved-parties/{uuid}/postal-addresses/{postalAddressUsageType}")
+model
+CreateInternalIdentifierRequest.java
+CreateOrganisationUnitNameRequest.java
+CreateOrganisationUnitRequest.java
+CreateOrganisationUnitResponse.java
+CreatePostalAddressRequest.java
+DigitalAddressResponse.java
+ErrorResponse.java
+GroupResponse.java
+InnerErrorResponse.java
+InternalIdentifierResponse.java
+InvolvedPartiesLinkHrefResponse.java
+InvolvedPartiesLinkSelfResponse.java
+InvolvedPartiesOrganisationUnitResponse.java
+ManagingEntityResponse.java
+OrganisationNameResponse.java
+OrganisationUnit.java
+OrganisationUnitNameResponse.java
+OrganisationUnitOrganisationRelationshipRequest.java
+OrganisationUnitOrganisationRelationshipResponse.java
+PostalAddressResponse.java
+SearchChitizenshipResponseV1.java
+SearchIndividualNameResponseV1.java
+SearchIndividualResponseV1.java
+SearchInvolvedPartiesOrganisationUnitRequestV1.java
+SearchInvolvedPartiesRequestV1.java
+SearchInvolvedPartiesResponseV1.java
+SearchInvolvedPartyByInternalIdentifierRequestV1.java
+SearchOrganisationResponseV1.java
+SearchOrganisationUnitAddressResponseV1.java
+SearchOrganisationUnitAddressResponseV2.java
+SearchOrganisationUnitDigitalAddressesV1.java
+SearchOrganisationUnitDigitalAddressesV2.java
+SearchOrganisationUnitExternalIdentifierResponseV1.java
+SearchOrganisationUnitExternalIdentifierResponseV2.java
+SearchOrganisationUnitInternalIdentifierResponseV1.java
+SearchOrganisationUnitInternalIdentifierResponseV2.java
+SearchOrganisationUnitInvolvedPartyTypeResponseV2.java
+SearchOrganisationUnitListResponseV2.java
+SearchOrganisationUnitNameResponseV1.java
+SearchOrganisationUnitNameResponseV2.java
+SearchOrganisationUnitResponseV1.java
+SearchOrganisationUnitResponseV2.java
+UpdateExternalIdentifierOrganisationUnitRequest.java
+UpdateExternalIdentifierOrganisationUnitResponse.java
+UpdateInvolvedPartyIndividualNamesResponseV5.java
+UpdateInvolvedPartyIndividualRequestV5.java
+UpdateInvolvedPartyIndividualResponseV5.java
+UpdateInvolvedPartyInternalIdentifierResponseV5.java
+UpdateInvolvedPartyOrganisationRequestV5.java
+UpdateInvolvedPartyOrganisationResponseV5.java
+UpdateInvolvedPartyOrganisationUnitRequestV5.java
+UpdateInvolvedPartyOrganisationUnitResponseV5.java
+UpdateInvolvedPartyRequestV5.java
+UpdateInvolvedPartyResponseV5.java
+UpdateOrganisationUnitNameV5Request.java
+UpdateOrganisationUnitNameV5Response.java
+UpdatePostalAddressV5Response.java
 
+service
+AddressService.java
+DeleteOrganisationHierarchyService.java
+InvolvedPartySearchService.java
+OnePamRepository.java
+OrganisationUnitSearchService.java
+OrganisationUnitService.java
+PhoenixDiscoveryService.java
+UpdateOrganisationUnitService.java
 
+utils
+DataDistributionConstants.java
+RegkeyEnum.java
 
-    public final String label;
-    public final String method;
-    public final String endpoint;
+HeartbeatController.java
 
-    RegkeyEnum(String label, String method, String endpoint) {
-        this.label = label;
-        this.method = method;
-        this.endpoint = endpoint;
-    }
-
-    /**
-     * Dynamically replaces path variables like {uuid} with actual values.
-     */
-    public String resolveEndpoint(String... values) {
-        String resolved = endpoint;
-        for (String value : values) {
-            resolved = resolved.replaceFirst("\\{[^}]+}", value);
-        }
-        return resolved;
-    }
-
-    @Override
-    public String toString() {
-        return label + " || " + method + SPACE + endpoint;
-    }
-}
-    public CompletableFuture<UpdateOrganisationUnitNameV5Response> updateOrganisationUnitName(
-            UpdateOrganisationUnitNameV5Request payload, String uuid, String nameType) {
-        try {
-            String url = RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME.resolveEndpoint(uuid, nameType);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Patch())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            return objectMapper.readValue(response.contentString(), UpdateOrganisationUnitNameV5Response.class);
-                        } catch (Exception e) {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
-                                    "Failed to parse response from updateOrganisationUnitName API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
-                    "Failed to build request for updateOrganisationUnitName API",
-                    e.getMessage()
-            );
-        }
-package com.ing.datadist.api.model;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-
-@Generated
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UpdateOrganisationUnitNameV5Response {
-
-    @JsonProperty("organisationUnitName")
-    private OrganisationUnitNameResponse organisationUnitName;
-
-    @JsonProperty("_links")
-    private InvolvedPartiesLinkSelfResponse links;
-
-}
-
-package com.ing.datadist.api.model;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-
-@Generated
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UpdateOrganisationUnitNameV5Request {
-
-    @JsonProperty("organisationUnitName")
-    private String organisationUnitName;
-
-    @JsonProperty("effectiveDate")
-    private String effectiveDate;
-
-    @JsonProperty("endDate")
-    private String endDate;
-
-    @JsonProperty("dataSource")
-    private String dataSource;
-
-}
-
-Involved Party API
-
-Share
-View in Console
-Back to API details
-Updates an Organisation Unit Name
-patch
-/v5/involved-parties/{uuid}/organisation-unit-names/{nameType}
-
-🏷️ Name
-
-Updates an Organisation Unit Name.
-
-header params
-X-ING-LastUpdateUser string required
-The LastUpdateUser
-
-path params
-uuid string required
-UUID of an Organisation Unit
-
-nameType string required
-NameType of an Organisation Unit to be updated
-
-Request body (required)
-Specify the involved party object in Json
-
-
-application/json
-
-Schema
-Examples
-▾
-object required
-organisationUnitName string
-example: ABC corporation
-effectiveDate string
-example: 2020-10-10T10:11:12.345+02:00
-endDate string
-example: 2050-12-12T23:59:59.999+02:00
-dataSource string
-example: FOS_IT
-Responses
-
-200
-
-400
-
-404
-
-500
-200 OK
-
-
-application/json
-
-Schema
-Examples
-▾
-object
-▾
-organisationUnitName object
-organisationUnitNameType string
-example: OU_NM
-organisationUnitName string
-example: ABC corporation
-dataSource string
-example: FOS_IT
-lastUpdateUser string
-example: OnePam
-lastUpdateDate string
-example: 2021-04-27T09:11:11.111Z
-effectiveDate string
-example: 2020-10-10T08:11:12.345Z
-endDate string
-example: 2050-12-12T21:59:59.999Z
-▾
-_links object
-▾
-self object
-href string
-example: https://(hostname):(port)/v5/involved-parties/{uuid}/names
-    }
+batch
+configreader
+domain
+ecs
+kafka
+DataDistributionApplication.java
+resources
+avro
+NotifyDigitalAddress5Event.avsc
+NotifyIndustryClassification5Event.avsc
+NotifyInvolvedPartyExternalIdentifier5Event.avsc
+NotifyInvolvedPartyInternalIdentifier5Event.avsc
+notifyorganisationhierarchy5Event.avsc
+NotifyOrganisationUnitName5Event.avsc
+NotifyOrganization5Event.avsc
+NotifyOrganizationUnit5Event.avsc
+NotifyPostalAddress5Event.avsc
+cofaceOpsData.csv
+ddsql.txt
+test
+target
+pom.xml
+ichpConf
+assembly
+src
+main
+resources
+ichp
+common-properties
+logback-spring.xml
+peer-token.jwt
+version.properties
+tst
+properties
+dcr
+wpr
+values.yaml
+common-values.yaml
+target
+pom.xml
+LocalConf
+src
+main
+resources
+accesstokens.jks
+application.yml
+http-trust.jks
+identity.jks
+idtokens.jks
+keystore.jks
+manifest.jks
+manifest.jose
+peer-token.jwt
+peertokens.jks
+pom.xml
+monitoring
+target
+.gitignore
+ichp-deployment-nonProd.yml
+kingsroadData.yaml
+pom.xml
+PR-verify-pipeline.yml
+README.md
+resource.yaml
+SonarQube.yaml
+touchctl-pipeline.yaml
+whitelist.yml

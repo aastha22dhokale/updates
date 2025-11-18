@@ -11,6 +11,11 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class UpdateOrganisationUnitService {
+    private final OnePamRepository onePamRepository;
+
+    public UpdateOrganisationUnitService(OnePamRepository onePamRepository){
+        this.onePamRepository = onePamRepository;
+    }
 
     public void updateOrganisationUnit(OrganisationUnitDomainWrapper wrapper, SearchInvolvedPartiesResponseV1 response) throws Exception {
 
@@ -88,363 +93,30 @@ public class UpdateOrganisationUnitService {
         }
     }
 }
+[INFO] 6 errors
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  14.325 s
+[INFO] Finished at: 2025-11-18T12:16:02+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project DataDistribution: Compilation failure: Compilation failure:
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[42,59] incompatible types: com.ing.datadist.domain.OrganisationUnitDomainWrapper cannot be converted to com.ing.datadist.api.model.UpdatePostalAddressV5Request
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[48,58] incompatible types: com.ing.datadist.domain.OrganisationUnitDomainWrapper cannot be converted to com.ing.datadist.api.model.UpdatePostalAddressV5Request
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[54,58] incompatible types: com.ing.datadist.domain.OrganisationUnitDomainWrapper cannot be converted to com.ing.datadist.api.model.UpdatePostalAddressV5Request
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[60,58] incompatible types: com.ing.datadist.domain.OrganisationUnitDomainWrapper cannot be converted to com.ing.datadist.api.model.UpdatePostalAddressV5Request
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[66,58] incompatible types: com.ing.datadist.domain.OrganisationUnitDomainWrapper cannot be converted to com.ing.datadist.api.model.UpdatePostalAddressV5Request
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[72,58] incompatible types: com.ing.datadist.domain.OrganisationUnitDomainWrapper cannot be converted to com.ing.datadist.api.model.UpdatePostalAddressV5Request
+[ERROR] -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+PS C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution> 
 
-package com.ing.datadist.api.service;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ing.apisdk.toolkit.connectivity.api.JavaService;
-import com.ing.apisdk.toolkit.connectivity.transport.http.japi.RichHttpRequestBuilder;
-import com.ing.apisdk.toolkit.connectivity.transport.http.japi.RichHttpRequestBuilderException;
-
-import com.ing.datadist.api.config.InvolvedPartyApiProperties;
-import com.ing.datadist.api.exception.DataDistributionApiException;
-import com.ing.datadist.api.model.*;
-import com.ing.datadist.api.utils.RegkeyEnum;
-import com.twitter.finagle.http.Method;
-import com.twitter.finagle.http.Request;
-import com.twitter.finagle.http.Response;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-import scala.collection.JavaConverters;
-
-import java.util.Map;
-
-import java.util.concurrent.CompletableFuture;
-
-@Slf4j
-@Component
-public class OnePamRepository {
-
-    private final JavaService<Request, Response> apiClient;
-    private final ObjectMapper objectMapper;
-    private final InvolvedPartyApiProperties apiProperties;
-
-    public OnePamRepository(@Qualifier("integrationServiceGeneric") JavaService<Request, Response> apiClient,
-                            ObjectMapper objectMapper,
-                            InvolvedPartyApiProperties apiProperties) {
-        this.apiClient = apiClient;
-        this.objectMapper = objectMapper;
-        this.apiProperties = apiProperties;
-    }
-
-    public CompletableFuture<InvolvedPartiesOrganisationUnitResponse> createInvolvedParty(CreateOrganisationUnitRequest payload) {
-        try {
-            String url = RegkeyEnum.CREATE_INVOLVED_PARTY.endpoint;
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Post())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUse", "IN_ADMIN")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            return objectMapper.readValue(response.contentString(), InvolvedPartiesOrganisationUnitResponse.class);
-                        } catch (Exception e) {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.CREATE_INVOLVED_PARTY,
-                                    "Failed to parse response from Involved Party API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.CREATE_INVOLVED_PARTY,
-                    "Failed to build request for create involved party API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    public CompletableFuture<Void> updateExternalIdentifier(String uuid, UpdateExternalIdentifierOrganisationUnitRequest payload) {
-        try {
-            String url = RegkeyEnum.UPDATE_EXTERNAL_IDENTIFIER.resolveEndpoint(uuid);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Post())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUse", "IN_ADMIN")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                            return null;
-                        } else {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.UPDATE_EXTERNAL_IDENTIFIER,
-                                    "Failed to update external identifier",
-                                    "Status: " + response.statusCode()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.UPDATE_EXTERNAL_IDENTIFIER,
-                    "Failed to build request for update external identifier API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    public CompletableFuture<Void> createOrganisationUnitHierarchy(OrganisationUnitOrganisationRelationshipRequest payload) {
-        try {
-            String url = RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY.endpoint;
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Post())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUse", "IN_ADMIN")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                            return null;
-                        } else {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY,
-                                    "Failed to create organisation unit hierarchy",
-                                    "Status: " + response.statusCode()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.CREATE_ORGANISATION_UNIT_HIERARCHY,
-                    "Failed to build request for organisation unit hierarchy API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    public CompletableFuture<SearchInvolvedPartiesResponseV1> searchInvolvedPartyByInternalIdentifier(SearchInvolvedPartiesRequestV1 payload) {
-        try {
-            String url = RegkeyEnum.SEARCH_ORGANISATION_UNIT.endpoint;  // ✅ dynamically from enum
-            log.info("searchInvolvedPartyByInternalIdentifier request payload: {}", payload);
-            String jsonPayload = objectMapper.writeValueAsString(payload);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Post())
-                    .withJsonContent(jsonPayload)
-                    .withHeader("Content-Type", "application/json")
-                    .build();
-            printRequest(request);
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            log.info("searchInvolvedPartyByInternalIdentifier response: {}", response);
-                            return objectMapper.readValue(response.contentString(), SearchInvolvedPartiesResponseV1.class);
-                        } catch (Exception e) {
-                            log.error("searchInvolvedPartyByInternalIdentifier error: {}", e.getMessage());
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.SEARCH_ORGANISATION_UNIT,
-                                    "Failed to parse response from search organisation unit API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (Exception e) {
-            log.error("searchInvolvedPartyByInternalIdentifier API error: {}", e.getMessage());
-            throw new DataDistributionApiException(
-                    RegkeyEnum.SEARCH_ORGANISATION_UNIT,
-                    "Failed to build request for search organisation unit API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    public CompletableFuture<UpdateOrganisationUnitNameV5Response> updateOrganisationUnitName(
-            UpdateOrganisationUnitNameV5Request payload, String uuid, String nameType) {
-        try {
-            String url = RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME.resolveEndpoint(uuid, nameType);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Patch())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            return objectMapper.readValue(response.contentString(), UpdateOrganisationUnitNameV5Response.class);
-                        } catch (Exception e) {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
-                                    "Failed to parse response from updateOrganisationUnitName API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.UPDATE_ORGANISATION_UNIT_NAME,
-                    "Failed to build request for updateOrganisationUnitName API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    public CompletableFuture<UpdateInvolvedPartyResponseV5> updateInvolvedParty(UpdateInvolvedPartyRequestV5 payload, String uuid) {
-        try {
-            String url = RegkeyEnum.UPDATE_INVOLVED_PARTY.resolveEndpoint(uuid);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Patch())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        try {
-                            return objectMapper.readValue(response.contentString(), UpdateInvolvedPartyResponseV5.class);
-                        } catch (Exception e) {
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.UPDATE_INVOLVED_PARTY,
-                                    "Failed to parse response for Update InvolvedParty Request API",
-                                    e.getMessage()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.UPDATE_INVOLVED_PARTY,
-                    "Failed to build request for Update InvolvedParty Request API",
-                    e.getMessage()
-            );
-        }
-    }
-
-    private static void printRequest(Request req) {
-        try {
-            log.info("----- Request Details -----");
-            log.info("Method: {}", req.method());
-            log.info("URI: {}", req.uri());
-            log.info("Version: {}", req.version());
-            Map<String, String> headerMap = JavaConverters.mapAsJavaMapConverter(req.headerMap()).asJava();
-            for (Map.Entry<String, String> entry : headerMap.entrySet()) {
-                log.info("Header: {}: {}", entry.getKey(), entry.getValue());
-            }
-            log.info("Body: {}", req.contentString());
-            log.info("---------------------------");
-        } catch (Exception e) {
-            log.error("Exception while printing request", e);
-        }
-    }
-
-    public CompletableFuture<Void> createPostalAddress(String uuid, CreatePostalAddressRequest payload) {
-        try {
-            String url = RegkeyEnum.CREATE_POSTAL_ADDRESS.resolveEndpoint(uuid);
-            log.info("Calling OnePAM API to create postal address for UUID: {}", uuid);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Patch())
-                    .withJsonContent(payload)
-                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
-                    .build();
-            return apiClient.apply(request)
-                    .thenApply(response -> {
-                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                            log.info("Postal address created successfully for UUID: {}", uuid);
-                            return null;
-                        } else {
-                            log.error("Failed to create postal address. Status: {}", response.statusCode());
-                            throw new DataDistributionApiException(
-                                    RegkeyEnum.CREATE_POSTAL_ADDRESS,
-                                    "Failed to create postal address",
-                                    "Status: " + response.statusCode()
-                            );
-                        }
-                    });
-        } catch (RichHttpRequestBuilderException e) {
-            throw new DataDistributionApiException(
-                    RegkeyEnum.CREATE_POSTAL_ADDRESS,
-                    "Failed to build request for postal address creation",
-                    e.getMessage()
-            );
-        }
-    }
-
-    //fixme need fetch the even OrganisationUnitHierarchy uuid from Accounting table later
-    public OrganisationUnitOrganisationRelationshipResponse closeOrganisationHierarchyRelationship(String uuid) {
-        try {
-//            String url = apiProperties.getUrl() + "/v1/organisation-hierarchies/relationship/" + uuid + "/close";
-            String url = RegkeyEnum.CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP.resolveEndpoint(uuid);
-            log.info("Closing Organisation Hierarchy Relationship");
-            log.info("Request URL: {}", url);
-            Request request = new RichHttpRequestBuilder()
-                    .withUrl(url)
-                    .withMethod(Method.Post())
-                    .withHeader("X-ING-LastUpdateUser", "IN_ADMIN")
-                    .build();
-            printRequest(request);
-            Response response = apiClient.apply(request).get();
-            log.info("Response Status: {}", response.statusCode());
-            log.info("Response Body: {}", response.contentString());
-            if (response.statusCode() >= 200) {
-                ObjectMapper mapper = new ObjectMapper();
-                return mapper.readValue(response.contentString(), OrganisationUnitOrganisationRelationshipResponse.class);
-            } else {
-                throw new DataDistributionApiException(
-                        RegkeyEnum.CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP,
-                        "Failed to close relationship",
-                        "Status: " + response.statusCode()
-                );
-            }
-        } catch (Exception e) {
-            log.error("Exception while closing Organisation Hierarchy Relationship for uuid={}", uuid, e);
-            throw new DataDistributionApiException(
-                    RegkeyEnum.CLOSE_ORGANISATION_HIERARCHY_RELATIONSHIP,
-                    "Error during closing organisation hierarchy relationship",
-                    e.getMessage()
-            );
-        }
-
-    }
-//
-//    public CompletableFuture<UpdatePostalAddressV5Response> updatePostalAddress(
-//            com.ing.datadist.domain.OrganisationUnitDomainWrapper wrapper,
-//            String uuid, String postalAddressUsageType) {
-//        try {
-////            UpdatePostalAddressV5Request payload = UpdatePostalAddressV5Request.builder()
-////                    .lastVerificationDate(wrapper.getPostalAddressLastVerificationDate())   // ensure wrapper has this getter
-////                    .endDate(wrapper.getPostalAddressEndDate())                             // ensure wrapper has this getter
-////                    .deliveryFailureReasonType(wrapper.getPostalAddressDeliveryFailureReasonType()) // ensure wrapper has this getter
-////                    .build();
-//            String url = RegkeyEnum.UPDATE_POSTAL_ADDRESS.resolveEndpoint(uuid, postalAddressUsageType);
-//            log.info("Updating Postal Address.");
-//
-//            Request request = new RichHttpRequestBuilder()
-//                    .withUrl(url)
-//                    .withMethod(Method.Patch())
-//                    .withJsonContent(payload)
-//                    .withHeader("X-ING-LastUpdateUser", "X-ING-LastUpdateUser")
-//                    .build();
-//
-//            return apiClient.apply(request)
-//                    .thenApply(response -> {
-//                        try {
-//                            return objectMapper.readValue(response.contentString(), UpdatePostalAddressV5Response.class);
-//                        } catch (Exception e) {
-//                            throw new DataDistributionApiException(
-//                                    RegkeyEnum.UPDATE_POSTAL_ADDRESS,
-//                                    "Failed to parse response from updatePostalAddress API",
-//                                    e.getMessage()
-//                            );
-//                        }
-//                    });
-//        } catch (RichHttpRequestBuilderException e) {
-//            throw new DataDistributionApiException(
-//                    RegkeyEnum.UPDATE_POSTAL_ADDRESS,
-//                    "Failed to build request for updatePostalAddress API",
-//                    e.getMessage()
-//            );
-//        }
-//    }
-//
-//    public CompletableFuture<UpdatePostalAddressV5Response> updatePostalAddress(
-//        UpdatePostalAddressV5Request payload, String uuid, String postalAddressUsageType) {
 
     public CompletableFuture<UpdatePostalAddressV5Response> updatePostalAddress(
         UpdatePostalAddressV5Request payload, String uuid, String usageType){
@@ -479,40 +151,51 @@ public class OnePamRepository {
      }
     }
 
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+import java.io.Serializable;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UpdatePostalAddressV5Response implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+     @JsonProperty("postalAddress")
+    private PostalAddressResponse postalAddress;
+
+    @JsonProperty("_links")
+    private InvolvedPartiesLinkSelfResponse links;
 }
 
-[INFO] 6 errors
-[INFO] -------------------------------------------------------------
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  13.740 s
-[INFO] Finished at: 2025-11-18T12:06:06+05:30
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project DataDistribution: Compilation failure: Compilation failure:
-[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[37,22] cannot find symbol 
-[ERROR]   symbol:   variable onePamRepository
-[ERROR]   location: class com.ing.datadist.api.service.UpdateOrganisationUnitService
-[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[43,21] cannot find symbol 
-[ERROR]   symbol:   variable onePamRepository
-[ERROR]   location: class com.ing.datadist.api.service.UpdateOrganisationUnitService
-[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[49,21] cannot find symbol 
-[ERROR]   symbol:   variable onePamRepository
-[ERROR]   location: class com.ing.datadist.api.service.UpdateOrganisationUnitService
-[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[55,21] cannot find symbol 
-[ERROR]   symbol:   variable onePamRepository
-[ERROR]   location: class com.ing.datadist.api.service.UpdateOrganisationUnitService
-[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[61,21] cannot find symbol 
-[ERROR]   symbol:   variable onePamRepository
-[ERROR]   location: class com.ing.datadist.api.service.UpdateOrganisationUnitService
-[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[67,21] cannot find symbol 
-[ERROR]   symbol:   variable onePamRepository
-[ERROR]   location: class com.ing.datadist.api.service.UpdateOrganisationUnitService
-[ERROR] -> [Help 1]
-[ERROR]
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR]
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
-PS C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution> 
+
+package com.ing.datadist.api.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+
+import java.io.Serializable;
+
+@Generated
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UpdatePostalAddressV5Request implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+       @JsonProperty("lastVerificationDate")
+    private String lastVerificationDate;
+
+    @JsonProperty("endDate")
+    private String endDate;
+
+    @JsonProperty("deliveryFailureReasonType")
+    private String deliveryFailureReasonType;
+}
+

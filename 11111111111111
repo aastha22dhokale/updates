@@ -1,234 +1,65 @@
-package com.ing.datadist.api.service;
-
+package com.ing.datadist.api.payload;
 import com.ing.datadist.api.model.*;
-
 import com.ing.datadist.domain.OrganisationUnitDomainWrapper;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+public class PayloadFactory {
 
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.stereotype.Service;
-
-import org.springframework.lang.NonNull;
-
-import com.ing.datadist.api.payload.PayloadFactory;
-
-import java.util.List;
-
-import java.util.Objects;
-
-@Service
-
-@Slf4j
-
-public class UpdateOrganisationUnitService {
-
-    private final OnePamRepository onePamRepository;
-
-    public UpdateOrganisationUnitService(OnePamRepository onePamRepository){
-
-        this.onePamRepository = onePamRepository;
-
+    public static UpdateOrganisationUnitNameV5Request buildUpdateNamePayload(
+            OrganisationUnitDomainWrapper wrapper,
+            String newName
+    ) {
+        return UpdateOrganisationUnitNameV5Request.builder()
+                .organisationUnitName(newName != null ? newName : wrapper.getOrganisationUnitName())
+                .dataSource(wrapper.getRecordActionType())             // Taking real value
+                .effectiveDate(ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                .build();
     }
 
-    public void updateOrganisationUnit(OrganisationUnitDomainWrapper wrapper,
+    public static UpdatePostalAddressV5Request buildUpdatePostalPayload(
+            OrganisationUnitDomainWrapper wrapper
+    ) {
+        return UpdatePostalAddressV5Request.builder()
+                .streetName(wrapper.getPostalAddressStreetNm())
+                .houseNumber(wrapper.getPostalAddressHouseNum())
+                .houseNumberAddition(wrapper.getPostalAddressHouseAdd())
+                .streetName(address.getStreetNm())
+                .postalCode(wrapper.getPostalAddressPostalCd())
+                .city(wrapper.getPostalAddressCityName())
+                .countryCode(wrapper.getPostalAddressCntryCd())
+                .lastVerificationDate(ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                .endDate("2050-12-12T23:59:59.999+02:00")
+                .deliveryFailureReasonType("ADR_NOT_EXST")
+                .build();
+    }
+      public static UpdateDigitalAddressV5Request buildUpdateDigitalPayload(
+            OrganisationUnitDomainWrapper wrapper
+    ) {
+        return UpdateDigitalAddressV5Request.builder()
+                .fullDigitalAddress(wrapper.getDigitalAddrEmail())   // real email from wrapper
+                .deliveryFailureReasonType("ADR_NOT_EXST")
+                .dataSource(wrapper.getRecordActionType())            // wrapper value
+                .effectiveDate(ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+                .endDate("2050-12-12T23:59:59.999+02:00")
+                .build();
+    }
+}
 
-                                       SearchInvolvedPartiesResponseV1 response,
-
-                                       @NonNull Boolean apiFlag) throws Exception {
-
-        String uuid = wrapper.getOpsUUID();
-
-        List<SearchOrganisationUnitResponseV1> organisationUnits = response.getOrganisationUnits();
-
-        for (SearchOrganisationUnitResponseV1 organisationUnit : organisationUnits) {
-
-            List<SearchOrganisationUnitNameResponseV1> organisationUnitNames = organisationUnit.getOrganisationUnitNames();
-
-            List<SearchOrganisationUnitAddressResponseV1> postalAddresses = organisationUnit.getPostalAddresses();
-
-            List<SearchOrganisationUnitDigitalAddressesV1> digitalAddresses = organisationUnit.getDigitalAddresses();
-
-            for (SearchOrganisationUnitNameResponseV1 name : organisationUnitNames) {
-
-                if (Objects.equals(wrapper.getOrganisationUnitName(), name.getOrganisationUnitName())) {
-
-                    log.info("Update organisationUnit name changed for uuid:{}  old:{} new:{}  ", uuid, wrapper.getOrganisationUnitName(), name.getOrganisationUnitName());
-
-                    if(apiFlag){
-
-                        onePamRepository.updateOrganisationUnitName(
-
-                                PayloadFactory.buildUpdateNamePayload(wrapper, wrapper.getOrganisationUnitName())
-
-                        );
-
-                    }
-
-                }
-
-            }
-
-            for (SearchOrganisationUnitAddressResponseV1 address : postalAddresses) {
-
-                if (Objects.equals(wrapper.getPostalAddressStreetNm(), address.getStreetName())) {
-
-                    log.info("Update organisationUnit StreetName changed for uuid:{}   old:{} new:{}  ", uuid, wrapper.getPostalAddressStreetNm(), address.getStreetName());
-
-                    if(apiFlag){
-
-                        onePamRepository.updatePostalAddress(PayloadFactory.buildUpdatePostalPayload(wrapper)                        );
-
-                    }
-
-                }
-
-                if (Objects.equals(wrapper.getPostalAddressHouseNum(), address.getHouseNumber())) {
-
-                    log.info("Update organisationUnit HouseNum changed for uuid:{}   old:{} new:{}  ", uuid, wrapper.getPostalAddressHouseNum(), address.getHouseNumber());
-
-                    if(apiFlag){
-
-                        onePamRepository.updatePostalAddress(
-
-                                PayloadFactory.buildUpdatePostalPayload(wrapper)
-
-                        );
-
-                    }
-
-                }
-
-                if (Objects.equals(wrapper.getPostalAddressHouseAdd(), address.getHouseNumberAddition())) {
-
-                    log.info("Update organisationUnit HouseAdd changed for uuid:{}  old:{} new:{}  ", uuid, wrapper.getPostalAddressHouseAdd(), address.getHouseNumberAddition());
-
-                    if(apiFlag){
-
-                        onePamRepository.updatePostalAddress(
-
-                                PayloadFactory.buildUpdatePostalPayload(wrapper)
-
-                        );
-
-                    }
-
-                }
-
-                if (Objects.equals(wrapper.getPostalAddressPostalCd(), address.getPostalCode())) {
-
-                    log.info("Update organisationUnit PostalCode changed for uuid:{}  old:{} new:{}  ", uuid, wrapper.getPostalAddressPostalCd(), address.getPostalCode());
-
-                    if(apiFlag){
-
-                        onePamRepository.updatePostalAddress(
-
-                                PayloadFactory.buildUpdatePostalPayload(wrapper)
-
-                        );
-
-                    }
-
-                }
-
-                if (Objects.equals(wrapper.getPostalAddressCityName(), address.getCityName())) {
-
-                    log.info("Update organisationUnit CityName changed for uuid:{}  old:{} new:{}  ", uuid, wrapper.getPostalAddressCityName(), address.getCityName());
-
-                    if(apiFlag){
-
-                        onePamRepository.updatePostalAddress(
-
-                                PayloadFactory.buildUpdatePostalPayload(wrapper)
-
-                        );
-
-                    }
-
-                }
-
-                if (Objects.equals(wrapper.getPostalAddressCntryCd(), address.getCountryCode())) {
-
-                    log.info("Update organisationUnit CountryCode changed for uuid:{}  old:{} new:{}  ", uuid, wrapper.getPostalAddressCntryCd(), address.getCountryCode());
-
-                    if(apiFlag){
-
-                        onePamRepository.updatePostalAddress(
-
-                                PayloadFactory.buildUpdatePostalPayload(wrapper)
-
-                        );
-
-                    }
-
-                }
-
-            }
-
-            for (SearchOrganisationUnitDigitalAddressesV1 digitalAddress : digitalAddresses) {
-                if (Objects.equals(wrapper.getDigitalAddrEmail(), digitalAddress.getFullDigitalAddress())) {
-                    log.info("Update organisationUnit FullDigitalAddress changed for uuid:{}  old:{} new:{} ", uuid, wrapper.getDigitalAddrEmail(), digitalAddress.getFullDigitalAddress()
-                    );
-                    if(apiFlag){
-                        onePamRepository.updateDigitalAddress(payload, uuid, digitalAddress.getFullDigitalAddress);
-                    }
-                }
-            }
-        }
-    }[INFO] 11 errors
-[INFO] -------------------------------------------------------------
-[INFO] ------------------------------------------------------------------------
-[INFO] Reactor Summary for DataDistributorAPIService 1.0.0:
-[INFO]
-[INFO] DataDistributorAPIService .......................... SUCCESS [  7.782 s]
-[INFO] DataDistributorAPI-conf ............................ SUCCESS [  0.758 s]
-[INFO] DataDistribution ................................... FAILURE [ 11.378 s]
-[INFO] ------------------------------------------------------------------------
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  20.367 s
-[INFO] Finished at: 2025-11-19T13:19:41+05:30
+[INFO] Total time:  21.157 s
+[INFO] Finished at: 2025-11-19T13:23:16+05:30
 [INFO] ------------------------------------------------------------------------
 [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project DataDistribution: Compilation failure: Compilation failure:
 [ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/payload/PayloadFactory.java:[23,17] cannot find symbol
 [ERROR]   symbol:   method streetName(java.lang.String)
 [ERROR]   location: class com.ing.datadist.api.model.UpdatePostalAddressV5Request.UpdatePostalAddressV5RequestBuilder
-[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/payload/PayloadFactory.java:[26,28] cannot find symbol
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/payload/PayloadFactory.java:[26,29] cannot find symbol
 [ERROR]   symbol:   variable address
 [ERROR]   location: class com.ing.datadist.api.payload.PayloadFactory
-[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[59,41] method updateOrganisationUnitName in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
-[ERROR]   required: com.ing.datadist.api.model.UpdateOrganisationUnitNameV5Request,java.lang.String,java.lang.String
-[ERROR]   found:    com.ing.datadist.api.model.UpdateOrganisationUnitNameV5Request
-[ERROR]   reason: actual and formal argument lists differ in length
-[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[79,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
-[ERROR]   required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
-[ERROR]   found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
-[ERROR]   reason: actual and formal argument lists differ in length
-[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[91,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
-[ERROR]   required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
-[ERROR]   found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
-[ERROR]   reason: actual and formal argument lists differ in length
-[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[107,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
-[ERROR]   required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
-[ERROR]   found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
-[ERROR]   reason: actual and formal argument lists differ in length
-[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[123,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
-[ERROR]   required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
-[ERROR]   found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
-[ERROR]   reason: actual and formal argument lists differ in length
-[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[139,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
-[ERROR]   required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
-[ERROR]   found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
-[ERROR]   reason: actual and formal argument lists differ in length
-[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[155,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
-[ERROR]   required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
-[ERROR]   found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
-[ERROR]   reason: actual and formal argument lists differ in length
-[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[172,63] cannot find symbol
-[ERROR]   symbol:   variable payload
-[ERROR]   location: class com.ing.datadist.api.service.UpdateOrganisationUnitService
-[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[172,92] cannot find symbol
-[ERROR]   symbol:   variable getFullDigitalAddress
-[ERROR]   location: variable digitalAddress of type com.ing.datadist.api.model.SearchOrganisationUnitDigitalAddressesV1
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[41,33] cannot find symbol 
+[ERROR]   symbol:   method getChannel()
+[ERROR]   location: variable wrapper of type com.ing.datadist.domain.OrganisationUnitDomainWrapper
 [ERROR] -> [Help 1]
 [ERROR]
 [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
@@ -240,5 +71,3 @@ public class UpdateOrganisationUnitService {
 [ERROR] After correcting the problems, you can resume the build with the command
 [ERROR]   mvn <args> -rf :DataDistribution
 PS C:\Users\UU47VT\cud-II\P33558-DataDistributorAPI> 
-
-}

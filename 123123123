@@ -1,3 +1,24 @@
+this was UpdateOrganisationUnitNameVsRequest request = UpdateOrganisationUnitNameVSRequest.builder()
+.organisationUnitName (wrapper.getOrganisationUnitName())
+.effectiveDate (ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+.dataSource (DATA_SOURCE)
+.build();
+
+previous req for name update
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 package com.ing.datadist.domain;
 
 import lombok.Data;

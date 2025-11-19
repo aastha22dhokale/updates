@@ -1,47 +1,187 @@
-package com.ing.datadist.api.model;
+Involved Party API
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+Share
+View in Console
+Back to API details
+DEPRECATED - Update a digital address for the party identified by the usage type.
+patch
+/v5/involved-parties/{uuid}/digital-addresses/{usageType}
 
-import java.io.Serializable;
+⚠️ This operation is deprecated
 
-@Generated
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UpdatePostalAddressV5Response implements Serializable {
-    private static final long serialVersionUID = 1L;
+🏷️ DigitalAddresses, Deprecated
 
-     @JsonProperty("postalAddress")
-    private PostalAddressResponse postalAddress;
+DEPRECATED - Update a digital address for the party identified by the usage type.
 
-    @JsonProperty("_links")
-    private InvolvedPartiesLinkSelfResponse links;
+header params
+X-ING-LastUpdateUser string required
+The LastUpdateUser
+
+path params
+uuid string required
+UUID of an Involved Party.
+
+usageType string required
+Usage type of the digital address to update
+
+Request body (required)
+The body should contain the fields you wish to update
+
+
+application/json
+
+Schema
+Examples
+This example has been generated based on the body schema.
+
+{
+  "fullDigitalAddress": "hello@ing.com",
+  "deliveryFailureReasonType": "ADR_NOT_EXST",
+  "dataSource": "FOS_IT",
+  "effectiveDate": "2020-10-10T10:11:12.345+02:00",
+  "endDate": "2050-12-12T23:59:59.999+02:00"
 }
 
+Responses
 
-package com.ing.datadist.api.model;
+200
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+400
 
-import java.io.Serializable;
+404
 
-@Generated
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class UpdatePostalAddressV5Request implements Serializable {
-    private static final long serialVersionUID = 1L;
+500
+200 OK
 
-       @JsonProperty("lastVerificationDate")
-    private String lastVerificationDate;
 
-    @JsonProperty("endDate")
-    private String endDate;
+application/json
 
-    @JsonProperty("deliveryFailureReasonType")
-    private String deliveryFailureReasonType;
+Schema
+Examples
+This example has been generated based on the body schema.
+
+{
+  "digitalAddress": {
+    "digitalAddressType": "EMAIL_ADR",
+    "digitalAddressUsageType": "PSN_EMAIL",
+    "fullDigitalAddress": "hello@ing.com",
+    "deliveryFailureReasonType": "ADR_NOT_EXST",
+    "dataSource": "FOS_IT",
+    "effectiveDate": "2020-10-10T08:11:12.345Z",
+    "endDate": "2050-12-12T21:59:59.999Z",
+    "lastUpdateUser": "OnePam",
+    "lastUpdateDate": "2021-04-27T09:11:11.111Z"
+  },
+  "_links": {
+    "self": {
+      "href": "https://(hostname):(port)/v5/involved-parties/a15f4243-e38b-4d96-af99-9c40c8dd08ab/digital-addresses"
+    }
+  }
+}
+ 
+ DHOKALE, A. (Aastha) 
+API & Stream Marketplace
+Home
+APIs
+Topics
+Useful links
+Subscribe
+OpenApiDocument
+P00007
+OAS 3
+Involved Party API
+
+Share
+View in Console
+Back to API details
+Update a postal address of an Involved Party
+patch
+/v5/involved-parties/{uuid}/postal-addresses/{postalAddressUsageType}
+
+🏷️ PostalAddresses
+
+This endpoints allows updating only active (current) postal address. It is only possible to update lastVerificationDate, endDate, and deliveryFailureReasonType. When updating an active postal address, and a future postal address of the same usage type exists for the same party, the endDate of the active postal address does not exceed the effective date of the future postal address.
+
+header params
+X-ING-LastUpdateUser string required
+User identifies the user; system; or process, who last updated the instance of a data object.
+
+path params
+uuid string required
+UUID of an Involved party.
+
+postalAddressUsageType string required
+Distinguishes between Postal Address types according to their usage.
+
+Request body
+The address attributes to update
+
+
+application/json
+
+Schema
+Examples
+This example has been generated based on the body schema.
+
+{
+  "lastVerificationDate": "2023-05-03T10:11:12.999Z",
+  "endDate": "2050-12-12T23:59:59.999+02:00",
+  "deliveryFailureReasonType": "ADR_NOT_EXST"
+}
+
+Responses
+
+200
+
+400
+
+404
+
+500
+200 OK
+
+
+application/json
+
+Schema
+Examples
+This example has been generated based on the body schema.
+
+{
+  "postalAddress": {
+    "postalAddressUsageType": "RSDNT_ADR",
+    "countryCode": "IT",
+    "countryRegionCode": "IT-RM",
+    "districtName": "Zuidoost",
+    "cityName": "ROMA",
+    "cityAreaName": "Fratton",
+    "regionName": "Greater New York",
+    "postalCode": "808",
+    "streetName": "Rodeo Drive",
+    "houseNumber": "123",
+    "houseNumberAddition": "A",
+    "buildingName": "White House",
+    "deliveryInformation": "Watch out for the angry dog",
+    "floor": "5",
+    "locationUnitNumber": "910",
+    "departmentName": "Retail department",
+    "subdepartmentName": "Electronics",
+    "poBoxNumber": "123",
+    "streetType": "ES_CALLE",
+    "unstructuredAddressLine1": "Tempura Road",
+    "unstructuredAddressLine2": "Big house on the hill",
+    "unstructuredAddressLine3": "Third house from the right",
+    "deliveryFailureReasonType": "ADR_NOT_EXST",
+    "dataSource": "FOS_IT",
+    "lastUpdateUser": "OnePam",
+    "lastUpdateDate": "2021-04-27T09:11:11.111Z",
+    "effectiveDate": "2020-10-10T08:11:12.345Z",
+    "lastVerificationDate": "2023-05-03T10:11:12.999Z",
+    "endDate": "2050-12-12T21:59:59.999Z"
+  },
+  "_links": {
+    "self": {
+      "href": "https://(hostname):(port)/v5/involved-parties/a15f4243-e38b-4d96-af99-9c40c8dd08ab/post-addresses"
+    }
+  }
 }

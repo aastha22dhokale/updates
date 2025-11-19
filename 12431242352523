@@ -1,0 +1,184 @@
+[INFO] DataDistributorAPI-conf ............................ SUCCESS [  0.849 s]
+[INFO] DataDistribution ................................... FAILURE [ 11.290 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  20.740 s
+[INFO] Finished at: 2025-11-19T13:29:17+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project DataDistribution: Compilation failure
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/payload/PayloadFactory.java:[55,17] cannot find symbol
+[ERROR]   symbol:   method houseNumber(java.lang.String)
+[ERROR]   location: class com.ing.datadist.api.model.UpdatePostalAddressV5Request.UpdatePostalAddressV5RequestBuilder
+[ERROR]
+[ERROR] -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[ERROR]
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <args> -rf :DataDistribution
+PS C:\Users\UU47VT\cud-II\P33558-DataDistributorAPI> 
+
+package com.ing.datadist.api.payload;
+
+import com.ing.datadist.api.model.*;
+
+import com.ing.datadist.domain.OrganisationUnitDomainWrapper;
+
+import java.time.ZonedDateTime;
+
+import java.time.format.DateTimeFormatter;
+
+public class PayloadFactory {
+
+    // -------------------------
+
+    // UPDATE NAME
+
+    // -------------------------
+
+    public static UpdateOrganisationUnitNameV5Request buildUpdateNamePayload(
+
+            OrganisationUnitDomainWrapper wrapper,
+
+            String newName
+
+    ) {
+
+        return UpdateOrganisationUnitNameV5Request.builder()
+
+                .organisationUnitName(newName != null ? newName : wrapper.getOrganisationUnitName())
+
+                .dataSource(wrapper.getRecordActionType())
+
+                .effectiveDate(ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+
+                .build();
+
+    }
+
+    // -------------------------
+
+    // UPDATE POSTAL ADDRESS
+
+    // -------------------------
+
+    public static UpdatePostalAddressV5Request buildUpdatePostalPayload(
+
+            OrganisationUnitDomainWrapper wrapper
+
+    ) {
+
+        return UpdatePostalAddressV5Request.builder()
+
+                .streetName(wrapper.getPostalAddressStreetNm())       // FIXED
+
+                .houseNumber(wrapper.getPostalAddressHouseNum())
+
+                .houseNumberAddition(wrapper.getPostalAddressHouseAdd())
+
+                .postalCode(wrapper.getPostalAddressPostalCd())       // FIXED
+
+                .cityName(wrapper.getPostalAddressCityName())         // FIXED
+
+                .countryCode(wrapper.getPostalAddressCntryCd())       // FIXED
+
+                .lastVerificationDate(ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+
+                .endDate("2050-12-12T23:59:59.999+02:00")
+
+                .deliveryFailureReasonType("ADR_NOT_EXST")
+
+                .build();
+
+    }
+
+    // -------------------------
+
+    // UPDATE DIGITAL
+
+    // -------------------------
+
+    public static UpdateDigitalAddressV5Request buildUpdateDigitalPayload(
+
+            OrganisationUnitDomainWrapper wrapper
+
+    ) {
+
+        return UpdateDigitalAddressV5Request.builder()
+
+                .fullDigitalAddress(wrapper.getDigitalAddrEmail())
+
+                .deliveryFailureReasonType("ADR_NOT_EXST")
+
+                .dataSource(wrapper.getRecordActionType())
+
+                .effectiveDate(ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+
+                .endDate("2050-12-12T23:59:59.999+02:00")
+
+                .build();
+
+    }
+
+}
+
+package com.ing.datadist.domain;
+
+import lombok.Data;
+
+@Data
+public class OrganisationUnitDomainWrapper {
+    private String opsUUID;
+    private String orgUUID;
+    private String orgExternalIdentifierVal;
+    private String opsExternalIdentifierVal;
+    private String organisationUnitName;
+    private String postalAddressStreetNm;
+    private String postalAddressHouseNum;
+    private String postalAddressHouseAdd;
+    private String postalAddressPostalCd;
+    private String postalAddressCityName;
+    private String postalAddressCntryCd;
+    private String opsExtIdDateOfIssue;
+    private String opsExtIdExpiryDate;
+    private String digitalAddrFullTel;
+    private String digitalAddrFullTefgn;
+    private String digitalAddrEmail;
+    private String recordActionType;
+}
+
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for DataDistributorAPIService 1.0.0:
+[INFO]
+[INFO] DataDistributorAPIService .......................... SUCCESS [  8.024 s]
+[INFO] DataDistributorAPI-conf ............................ SUCCESS [  1.000 s]
+[INFO] DataDistribution ................................... FAILURE [ 11.703 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  21.171 s
+[INFO] Finished at: 2025-11-19T13:30:30+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project DataDistribution: Compilation failure
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/payload/PayloadFactory.java:[53,17] cannot find symbol
+[ERROR]   symbol:   method streetName(java.lang.String)
+[ERROR]   location: class com.ing.datadist.api.model.UpdatePostalAddressV5Request.UpdatePostalAddressV5RequestBuilder
+[ERROR] 
+[ERROR] -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[ERROR]
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <args> -rf :DataDistribution
+PS C:\Users\UU47VT\cud-II\P33558-DataDistributorAPI> 

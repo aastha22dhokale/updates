@@ -43,7 +43,240 @@ public class PayloadFactory {
                 .endDate("2050-12-12T23:59:59.999+02:00")
                 .build();
     }
+} package com.ing.datadist.api.service;
+
+import com.ing.datadist.api.model.*;
+
+import com.ing.datadist.domain.OrganisationUnitDomainWrapper;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.stereotype.Service;
+
+import org.springframework.lang.NonNull;
+
+import com.ing.datadist.api.payload.PayloadFactory;
+
+import java.util.List;
+
+import java.util.Objects;
+
+@Service
+
+@Slf4j
+
+public class UpdateOrganisationUnitService {
+
+    private final OnePamRepository onePamRepository;
+
+    public UpdateOrganisationUnitService(OnePamRepository onePamRepository){
+
+        this.onePamRepository = onePamRepository;
+
+    }
+
+    public void updateOrganisationUnit(OrganisationUnitDomainWrapper wrapper,
+
+                                       SearchInvolvedPartiesResponseV1 response,
+
+                                       @NonNull Boolean apiFlag) throws Exception {
+
+        String uuid = wrapper.getOpsUUID();
+
+        String channel = wrapper.getChannel();   // required for repo calls
+
+        List<SearchOrganisationUnitResponseV1> organisationUnits = response.getOrganisationUnits();
+
+        for (SearchOrganisationUnitResponseV1 organisationUnit : organisationUnits) {
+
+            List<SearchOrganisationUnitNameResponseV1> organisationUnitNames = organisationUnit.getOrganisationUnitNames();
+
+            List<SearchOrganisationUnitAddressResponseV1> postalAddresses = organisationUnit.getPostalAddresses();
+
+            List<SearchOrganisationUnitDigitalAddressesV1> digitalAddresses = organisationUnit.getDigitalAddresses();
+
+            // NAME UPDATE
+
+            for (SearchOrganisationUnitNameResponseV1 name : organisationUnitNames) {
+
+                if (Objects.equals(wrapper.getOrganisationUnitName(), name.getOrganisationUnitName())) {
+
+                    log.info("Update organisationUnit name changed for uuid:{}  old:{} new:{}  ",
+
+                            uuid, wrapper.getOrganisationUnitName(), name.getOrganisationUnitName());
+
+                    if(apiFlag){
+
+                        onePamRepository.updateOrganisationUnitName(
+
+                                PayloadFactory.buildUpdateNamePayload(wrapper, wrapper.getOrganisationUnitName()),
+
+                                uuid,
+
+                                channel
+
+                        );
+
+                    }
+
+                }
+
+            }
+
+            // POSTAL ADDRESS UPDATE
+
+            for (SearchOrganisationUnitAddressResponseV1 address : postalAddresses) {
+
+                if (Objects.equals(wrapper.getPostalAddressStreetNm(), address.getStreetName())) {
+
+                    log.info("StreetName changed for uuid:{} old:{} new:{}",
+
+                            uuid, wrapper.getPostalAddressStreetNm(), address.getStreetName());
+
+                    if(apiFlag){
+
+                        onePamRepository.updatePostalAddress(
+
+                                PayloadFactory.buildUpdatePostalPayload(wrapper),
+
+                                uuid,
+
+                                channel
+
+                        );
+
+                    }
+
+                }
+
+                if (Objects.equals(wrapper.getPostalAddressHouseNum(), address.getHouseNumber())) {
+
+                    log.info("HouseNum changed for uuid:{} old:{} new:{}",
+
+                            uuid, wrapper.getPostalAddressHouseNum(), address.getHouseNumber());
+
+                    if(apiFlag){
+
+                        onePamRepository.updatePostalAddress(
+
+                                PayloadFactory.buildUpdatePostalPayload(wrapper),
+
+                                uuid,
+
+                                channel
+
+                        );
+
+                    }
+
+                }
+
+                if (Objects.equals(wrapper.getPostalAddressHouseAdd(), address.getHouseNumberAddition())) {
+
+                    log.info("HouseAdd changed for uuid:{} old:{} new:{}",
+
+                            uuid, wrapper.getPostalAddressHouseAdd(), address.getHouseNumberAddition());
+
+                    if(apiFlag){
+
+                        onePamRepository.updatePostalAddress(
+
+                                PayloadFactory.buildUpdatePostalPayload(wrapper),
+
+                                uuid,
+
+                                channel
+
+                        );
+
+                    }
+
+                }
+
+                if (Objects.equals(wrapper.getPostalAddressPostalCd(), address.getPostalCode())) {
+
+                    log.info("PostalCode changed for uuid:{} old:{} new:{}",
+
+                            uuid, wrapper.getPostalAddressPostalCd(), address.getPostalCode());
+
+                    if(apiFlag){
+
+                        onePamRepository.updatePostalAddress(
+
+                                PayloadFactory.buildUpdatePostalPayload(wrapper),
+
+                                uuid,
+
+                                channel
+
+                        );
+
+                    }
+
+                }
+
+                if (Objects.equals(wrapper.getPostalAddressCityName(), address.getCityName())) {
+
+                    log.info("CityName changed for uuid:{} old:{} new:{}",
+
+                            uuid, wrapper.getPostalAddressCityName(), address.getCityName());
+
+                    if(apiFlag){
+
+                        onePamRepository.updatePostalAddress(
+
+                                PayloadFactory.buildUpdatePostalPayload(wrapper),
+
+                                uuid,
+
+                                channel
+
+                        );
+
+                    }
+
+                }
+
+                if (Objects.equals(wrapper.getPostalAddressCntryCd(), address.getCountryCode())) {
+
+                    log.info("CountryCode changed for uuid:{} old:{} new:{}",
+
+                            uuid, wrapper.getPostalAddressCntryCd(), address.getCountryCode());
+                    if(apiFlag){
+                        onePamRepository.updatePostalAddress(
+                                PayloadFactory.buildUpdatePostalPayload(wrapper),
+                                uuid,
+                                channel
+                        );
+                    }
+                }
+            }
+            // DIGITAL ADDRESS UPDATE
+            for (SearchOrganisationUnitDigitalAddressesV1 digitalAddress : digitalAddresses) {
+                if (Objects.equals(wrapper.getDigitalAddrEmail(), digitalAddress.getFullDigitalAddress())) {
+                    log.info("Digital address changed for uuid:{} old:{} new:{}",
+                            uuid, wrapper.getDigitalAddrEmail(), digitalAddress.getFullDigitalAddress());
+                    if(apiFlag){
+                        onePamRepository.updateDigitalAddress(
+                                PayloadFactory.buildUpdateDigitalPayload(wrapper),
+                                uuid,
+                                channel
+                        );
+                    }
+                }
+            }
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
 
 [INFO] BUILD FAILURE
 [INFO] ------------------------------------------------------------------------

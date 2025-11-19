@@ -1,1 +1,50 @@
-[INFO] ------------------------------------------------------------- [ERROR] COMPILATION ERROR : [INFO] ------------------------------------------------------------- [ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OnePamRepository.java:[360,30] cannot find symbol symbol:   class UpdateDigitalAddressV5Response location: class com.ing.datadist.api.service.OnePamRepository [INFO] 1 error [INFO] ------------------------------------------------------------- [INFO] ------------------------------------------------------------------------ [INFO] BUILD FAILURE [INFO] ------------------------------------------------------------------------ [INFO] Total time:  15.876 s [INFO] Finished at: 2025-11-18T21:18:55+05:30 [INFO] ------------------------------------------------------------------------ [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project DataDistribution: Compilation failure [ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/OnePamRepository.java:[360,30] cannot find symbol [ERROR]   symbol:   class UpdateDigitalAddressV5Response [ERROR]   location: class com.ing.datadist.api.service.OnePamRepository [ERROR] [ERROR] -> [Help 1] [ERROR] [ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch. [ERROR] Re-run Maven using the -X switch to enable full debug logging. [ERROR] [ERROR] For more information about the errors and possible solutions, please read the following articles: [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException PS C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution> public CompletableFuture<UpdateDigitalAddressV5Response> updateDigitalAddress( com.ing.datadist.domain.OrganisationUnitDomainWrapper wrapper, String uuid, String usageType) { try { // manager said use dummy/sample constants for now UpdateDigitalAddressV5Request payload = UpdateDigitalAddressV5Request.builder() .fullDigitalAddress(wrapper.getDigitalAddrEmail()) .deliveryFailureReasonType("ADR_NOT_EXST") .dataSource("FOS_IT") .effectiveDate("2020-10-10T10:11:12.345+02:00") .endDate("2050-12-12T23:59:59.999+02:00") .build(); String url = RegkeyEnum.UPDATE_DIGITAL_ADDRESS.resolveEndpoint(uuid, usageType); log.info("Updating Digital Address for UUID: {} usageType: {}", uuid, usageType); Request request = new RichHttpRequestBuilder() .withUrl(url) .withMethod(Method.Patch()) .withJsonContent(payload) .withHeader("X-ING-LastUpdateUser", "IN_ADMIN") .build(); return apiClient.apply(request).thenApply(response -> { try { return objectMapper.readValue(response.contentString(), UpdateDigitalAddressV5Response.class); } catch (Exception e) { throw new DataDistributionApiException( RegkeyEnum.UPDATE_DIGITAL_ADDRESS, "Failed to parse response from updateDigitalAddress API", e.getMessage() ); } }); } catch (RichHttpRequestBuilderException e) { throw new DataDistributionApiException( RegkeyEnum.UPDATE_DIGITAL_ADDRESS, "Failed to build request for updateDigitalAddress API", e.getMessage() ); } } }package com.ing.datadist.api.service; import com.ing.datadist.api.model.*; import com.ing.datadist.domain.OrganisationUnitDomainWrapper; import lombok.extern.slf4j.Slf4j; import org.springframework.stereotype.Service; import java.util.List; import java.util.Objects; @Service @Slf4j public class UpdateOrganisationUnitService { private final OnePamRepository onePamRepository; public UpdateOrganisationUnitService(OnePamRepository onePamRepository){ this.onePamRepository = onePamRepository; } public void updateOrganisationUnit(OrganisationUnitDomainWrapper wrapper, SearchInvolvedPartiesResponseV1 response) throws Exception { String uuid = wrapper.getOpsUUID(); List<SearchOrganisationUnitResponseV1> organisationUnits = response.getOrganisationUnits(); for (SearchOrganisationUnitResponseV1 organisationUnit : organisationUnits) { List<SearchOrganisationUnitNameResponseV1> organisationUnitNames = organisationUnit.getOrganisationUnitNames(); List<SearchOrganisationUnitAddressResponseV1> postalAddresses = organisationUnit.getPostalAddresses(); List<SearchOrganisationUnitDigitalAddressesV1> digitalAddresses = organisationUnit.getDigitalAddresses(); for (SearchOrganisationUnitNameResponseV1 name : organisationUnitNames) { if (Objects.equals(wrapper.getOrganisationUnitName(), name.getOrganisationUnitName())) { log.info("Update organisationUnit name changed for uuid:{} old:{} new:{} ", uuid, wrapper.getOrganisationUnitName(), name.getOrganisationUnitName()); //Call update name API } } for (SearchOrganisationUnitAddressResponseV1 address : postalAddresses) { if (Objects.equals(wrapper.getPostalAddressStreetNm(), address.getStreetName())) { log.info("Update organisationUnit StreetName changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressStreetNm(), address.getStreetName()); //Call update postal addr API onePamRepository.updatePostalAddress(wrapper, uuid, address.getStreetName()); } if (Objects.equals(wrapper.getPostalAddressHouseNum(), address.getHouseNumber())) { log.info("Update organisationUnit HouseNum changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressHouseNum(), address.getHouseNumber()); //Call update postal addr API onePamRepository.updatePostalAddress(wrapper, uuid, address.getHouseNumber()); } if (Objects.equals(wrapper.getPostalAddressHouseAdd(), address.getHouseNumberAddition())) { log.info("Update organisationUnit HouseAdd changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressHouseAdd(), address.getHouseNumberAddition()); //Call update postal addr API onePamRepository.updatePostalAddress(wrapper, uuid, address.getHouseNumberAddition()); } if (Objects.equals(wrapper.getPostalAddressPostalCd(), address.getPostalCode())) { log.info("Update organisationUnit PostalCode changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressPostalCd(), address.getPostalCode()); //Call update postal addr API onePamRepository.updatePostalAddress(wrapper, uuid, address.getPostalCode()); } if (Objects.equals(wrapper.getPostalAddressCityName(), address.getCityName())) { log.info("Update organisationUnit CityName changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressCityName(), address.getCityName()); //Call update postal addr API onePamRepository.updatePostalAddress(wrapper, uuid, address.getCityName()); } if (Objects.equals(wrapper.getPostalAddressCntryCd(), address.getCountryCode())) { log.info("Update organisationUnit CountryCode changed for uuid:{} old:{} new:{} ", uuid, wrapper.getPostalAddressCntryCd(), address.getCountryCode()); //Call update postal addr API onePamRepository.updatePostalAddress(wrapper, uuid, address.getCountryCode()); } } for (SearchOrganisationUnitDigitalAddressesV1 digitalAddress : digitalAddresses) { if (Objects.equals(wrapper.getDigitalAddrEmail(), digitalAddress.getFullDigitalAddress())) { log.info("Update organisationUnit FullDigitalAddress changed for uuid:{} old:{} new:{} ", uuid, wrapper.getDigitalAddrEmail(), digitalAddress.getFullDigitalAddress()); //Call update digital addr API onePamRepository.updatePostalAddress(wrapper, uuid, digitalAddress.getFullDigitalAddress()); } } } } }
+  location: class com.ing.datadist.api.model.UpdateDigitalAddressV5Response
+[INFO] 3 errors
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  13.300 s
+[INFO] Finished at: 2025-11-19T10:58:45+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.0:compile (default-compile) on project DataDistribution: Compilation failure: Compilation failure:
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/model/UpdateDigitalAddressV5Response.java:[8,13] cannot find symbol   
+[ERROR]   symbol:   class _links
+[ERROR]   location: class com.ing.datadist.api.model.UpdateDigitalAddressV5Response
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/model/UpdateDigitalAddressV5Response.java:[8,20] cannot find symbol   
+[ERROR]   symbol:   class _links
+[ERROR]   location: class com.ing.datadist.api.model.UpdateDigitalAddressV5Response
+[ERROR] /C:/Users/UU47VT/dd-new/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/model/UpdateDigitalAddressV5Response.java:[4,1] cannot find symbol    
+[ERROR]   symbol:   class _links
+[ERROR]   location: class com.ing.datadist.api.model.UpdateDigitalAddressV5Response
+[ERROR] -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+PS C:\Users\UU47VT\dd-new\P33558-DataDistributorAPI\DataDistribution> 
+
+package com.ing.datadist.api.model;
+import lombok.Builder;
+import lombok.Data;
+@Data
+public class UpdateDigitalAddressV5Response{
+    private String status;
+    private  UpdateDigitalAddressV5Request digitalAddress;
+    private _links links;
+}
+
+package com.ing.datadist.api.model;
+import lombok.Builder;
+import lombok.Data;
+@Data
+@Builder
+public class UpdateDigitalAddressV5Request {
+    private String fullDigitalAddress;
+    private String deliveryFailureReasonType;
+    private String dataSource;
+    private String effectiveDate;
+    private String endDate;
+}

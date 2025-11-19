@@ -1,3 +1,43 @@
+[INFO] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/configreader/CofaceOpsConfigReader.java: Some input files use or override a deprecated API.
+[INFO] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/configreader/CofaceOpsConfigReader.java: Recompile with -Xlint:deprecation for details.
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR :
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/payload/PayloadFactory.java:[52,17] cannot find symbol
+  symbol:   method streetName(java.lang.String)
+  location: class com.ing.datadist.api.model.UpdatePostalAddressV5Request.UpdatePostalAddressV5RequestBuilder
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[59,41] method updateOrganisationUnitName in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
+  required: com.ing.datadist.api.model.UpdateOrganisationUnitNameV5Request,java.lang.String,java.lang.String
+  found:    com.ing.datadist.api.model.UpdateOrganisationUnitNameV5Request
+  reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[79,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
+  required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
+  found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
+  reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[95,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
+  required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
+  found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
+  reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[111,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
+  required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
+  found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
+  reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[127,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
+  required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
+  found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
+  reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[143,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
+  required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
+  found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
+  reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[159,41] method updatePostalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
+  required: com.ing.datadist.api.model.UpdatePostalAddressV5Request,java.lang.String,java.lang.String
+  found:    com.ing.datadist.api.model.UpdatePostalAddressV5Request
+  reason: actual and formal argument lists differ in length
+[ERROR] /C:/Users/UU47VT/cud-II/P33558-DataDistributorAPI/DataDistribution/src/main/java/com/ing/datadist/api/service/UpdateOrganisationUnitService.java:[179,41] method updateDigitalAddress in class com.ing.datadist.api.service.OnePamRepository cannot be applied to given types;
+  required: com.ing.datadist.api.model.UpdateDigitalAddressV5Request,java.lang.String,java.lang.String
+  found:    com.ing.datadist.api.model.UpdateDigitalAddressV5Request
+  reason: actual and formal argument lists differ in length
 [INFO] 9 errors
 [INFO] -------------------------------------------------------------
 [INFO] ------------------------------------------------------------------------
